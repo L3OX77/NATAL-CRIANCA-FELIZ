@@ -1,125 +1,81 @@
-const API_CRIANCAS = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=criancas";
-const API_PADRINHOS = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=padrinhos";
+const URL = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
+const lista = document.getElementById("lista-criancas");
+const formDiv = document.getElementById("form-apadrinhamento");
+const nomeSpan = document.getElementById("nome-crianca");
+const form = document.getElementById("form");
 
-async function carregarLista() {
-  const resposta = await fetch(API_CRIANCAS);
-  const dados = await resposta.json();
+let nomeCrianca = "";
 
-  const lista = document.getElementById("lista-criancas");
-  lista.innerHTML = "";
+fetch(`${URL}/sheet/criancas`)
+  .then((res) => res.json())
+  .then((dados) => {
+    lista.innerHTML = "";
 
-  dados.forEach(crianca => {
-    const item = document.createElement("div");
-    item.className = "card";
+    dados.forEach((crianca) => {
+      const card = document.createElement("div");
+      card.className = "card";
 
-    const imagem = crianca.imagem
-      ? `<img src="imagens/${crianca.imagem}" alt="${crianca.nome}" class="foto">`
-      : "";
+      const imagem = document.createElement("img");
+      imagem.src = `imagens/${crianca.imagem || "default.jpg"}`;
+      imagem.alt = crianca.nome;
 
-    const nome = crianca.nome || "Nome não informado";
-    const idade = crianca.idade ? `${crianca.idade} anos` : "não informado";
-    const altura = crianca.altura || "não informado";
-    const roupa = crianca.roupa || "não informado";
-    const calcado = crianca.calcado || "não informado";
+      const nome = document.createElement("h3");
+      nome.textContent = crianca.nome;
 
-    let botao;
-    if (crianca.apadrinhada?.toLowerCase() === "sim") {
-      botao = `<button class="apadrinhada" disabled>✅ Apadrinhada</button>`;
-    } else {
-      botao = `<button class="btn-apadrinhar" data-nome="${crianca.nome}">Apadrinhar</button>`;
-    }
+      const detalhes = document.createElement("p");
+      detalhes.innerHTML = `
+        Idade: ${crianca.idade || "não informado"} anos<br>
+        Altura: ${crianca.altura || "não informado"}<br>
+        Roupa: ${crianca.roupa || "não informado"}<br>
+        Calçado: ${crianca.calcado || "não informado"}<br>
+      `;
 
-    item.innerHTML = `
-      ${imagem}
-      <strong>${nome}</strong><br>
-      Idade: ${idade}<br>
-      Altura: ${altura}<br>
-      Roupa: ${roupa}<br>
-      Calçado: ${calcado}<br>
-      ${botao}
-    `;
+      const botao = document.createElement("button");
+      botao.textContent = crianca.apadrinhada === "sim" ? "Apadrinhada" : "Apadrinhar";
+      botao.disabled = crianca.apadrinhada === "sim";
+      botao.style.background = crianca.apadrinhada === "sim" ? "gray" : "green";
+      botao.style.color = "white";
 
-    lista.appendChild(item);
-  });
+      if (crianca.apadrinhada !== "sim") {
+        botao.addEventListener("click", () => {
+          nomeCrianca = crianca.nome;
+          nomeSpan.textContent = nomeCrianca;
+          document.getElementById("nomeSelecionado").value = nomeCrianca;
+          formDiv.style.display = "block";
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+      }
 
-  adicionarEventosBotoes();
-}
-
-function adicionarEventosBotoes() {
-  const botoes = document.querySelectorAll(".btn-apadrinhar");
-
-  botoes.forEach(botao => {
-    botao.addEventListener("click", () => {
-      const nomeSelecionado = botao.getAttribute("data-nome");
-
-      document.getElementById("nome-crianca").textContent = nomeSelecionado;
-      document.getElementById("form-apadrinhamento").style.display = "block";
-      document.getElementById("nome").focus();
-      document.getElementById("nomeSelecionado").value = nomeSelecionado;
+      card.appendChild(imagem);
+      card.appendChild(nome);
+      card.appendChild(detalhes);
+      card.appendChild(botao);
+      lista.appendChild(card);
     });
   });
-}
 
-document.getElementById("form-apadrinhamento").addEventListener("submit", async (e) => {
+// Submissão do formulário
+form.addEventListener("submit", (e) => {
   e.preventDefault();
 
-  const nome = document.getElementById("nome").value.trim();
-  const telefone = document.getElementById("telefone").value.trim();
-  const nomeCrianca = document.getElementById("nomeSelecionado").value;
+  const nome = document.getElementById("nome").value;
+  const telefone = document.getElementById("telefone").value;
 
-  if (!nome || !telefone) {
-    alert("Preencha todos os campos.");
-    return;
-  }
-
-  // 1. Envia dados para a aba "padrinhos"
-  await fetch(API_PADRINHOS, {
+  // Salvar padrinho
+  fetch(`${URL}/sheet/padrinhos`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      data: {
-        nome,
-        telefone,
-        crianca: nomeCrianca
-      }
-    })
+      data: { nome, telefone, crianca: nomeCrianca },
+    }),
   });
 
-  // 2. Atualiza o status de apadrinhamento da criança
-  await fetch(`${API_CRIANCAS}/search?nome=${encodeURIComponent(nomeCrianca)}`, {
+  // Atualizar status da criança
+  fetch(`${URL}/search?nome=${nomeCrianca}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      data: {
-        apadrinhada: "sim"
-      }
-    })
-  });
+    body: JSON.stringify({ data: { apadrinhada: "sim" } }),
+  }).then(() => location.reload());
 
-  document.getElementById("form-apadrinhamento").reset();
-  document.getElementById("form-apadrinhamento").style.display = "none";
-
-  await carregarLista();
+  form.reset();
 });
-
-// Máscara de telefone com limite de caracteres
-const telefoneInput = document.getElementById("telefone");
-
-telefoneInput.addEventListener("input", () => {
-  let valor = telefoneInput.value.replace(/\D/g, "");
-
-  if (valor.length > 11) valor = valor.slice(0, 11);
-
-  if (valor.length <= 2) {
-    valor = `(${valor}`;
-  } else if (valor.length <= 7) {
-    valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-  } else {
-    valor = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
-  }
-
-  telefoneInput.value = valor;
-});
-
-// Inicia
-carregarLista();
