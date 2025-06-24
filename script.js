@@ -1,111 +1,102 @@
-fetch('criancas.json')
+let data = [];
+let criancaSelecionada = null;
+
+// Carrega a lista de crianças do arquivo criancas.json
+fetch("criancas.json")
   .then(response => response.json())
-  .then(data => {
-    const grid = document.getElementById('grid-criancas');
-    const modal = document.getElementById('modal');
-    const form = document.getElementById('form-apadrinhamento');
-    const modalNome = document.getElementById('modal-nome');
-    const nomeInput = document.getElementById('nome-padrinho');
-    const telefoneInput = document.getElementById('telefone-padrinho');
-    const cancelar = document.getElementById('cancelar');
+  .then(json => {
+    data = json;
+    carregarLista();
+  });
 
-    let criancaSelecionada = null;
+function carregarLista() {
+  const lista = document.getElementById("lista-criancas");
+  lista.innerHTML = "";
 
-    // Renderiza os cards das crianças
-    data.forEach((crianca, index) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      if (crianca.apadrinhada) card.classList.add('apadrinhada');
+  data.forEach((crianca, index) => {
+    const item = document.createElement("div");
+    item.classList.add("crianca");
 
-      card.innerHTML = `
-        <img src="imagens/${crianca.foto}" alt="Foto de ${crianca.nome}" />
-        <h3>${crianca.nome}</h3>
-        <p>Idade: ${crianca.idade}</p>
-        <p>Altura: ${crianca.altura} m</p>
-        <p>Tam. roupa: ${crianca.tam_roupa}</p>
-        <p>Tam. calçado: ${crianca.tam_calcado}</p>
-        ${!crianca.apadrinhada ? '<button>Quero apadrinhar</button>' : ''}
-      `;
+    const status = crianca.apadrinhada ? "✅ Apadrinhada" : "🧒 Disponível";
+    const botao = crianca.apadrinhada
+      ? `<span style="color: gray;">${status}</span>`
+      : `<button onclick="selecionarCrianca(${index})">Apadrinhar</button>`;
 
-      if (!crianca.apadrinhada) {
-        const botao = card.querySelector('button');
-        botao.addEventListener('click', () => {
-          criancaSelecionada = index;
-          modal.classList.remove('hidden');
-          modalNome.textContent = crianca.nome;
-        });
-      }
+    item.innerHTML = `
+      <strong>${crianca.nome}</strong><br>
+      Idade: ${crianca.idade} anos<br>
+      Altura: ${crianca.altura}<br>
+      Roupa: ${crianca.tamanho_roupa}<br>
+      Calçado: ${crianca.numero_calcado}<br>
+      ${botao}
+    `;
 
-      grid.appendChild(card);
-    });
+    lista.appendChild(item);
+  });
+}
 
-    // Máscara de telefone FUNCIONAL
-    telefoneInput.addEventListener('input', () => {
-      let valor = telefoneInput.value.replace(/\D/g, '');
-      valor = valor.slice(0, 11); // Limita a 11 dígitos
+function selecionarCrianca(index) {
+  criancaSelecionada = index;
+  const form = document.getElementById("form-apadrinhamento");
+  form.style.display = "block";
 
-      if (valor.length === 0) {
-        telefoneInput.value = '';
-      } else if (valor.length <= 2) {
-        telefoneInput.value = `(${valor}`;
-      } else if (valor.length <= 7) {
-        telefoneInput.value = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-      } else {
-        telefoneInput.value = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
-      }
-    });
+  document.getElementById("nome").value = "";
+  document.getElementById("telefone").value = "";
 
-    // Cancelar
-    cancelar.addEventListener('click', () => {
-      modal.classList.add('hidden');
-      nomeInput.value = '';
-      telefoneInput.value = '';
-    });
+  document.getElementById("form-titulo").innerText =
+    "Apadrinhando: " + data[index].nome;
+}
 
-    // Submissão do formulário
-    form.addEventListener('submit', (e) => {
+// Máscara de telefone ao digitar
+document.getElementById("telefone").addEventListener("input", function (e) {
+  let valor = e.target.value.replace(/\D/g, "").slice(0, 11);
 
-      form.addEventListener('submit', (e) => {
+  if (valor.length >= 2) valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
+  if (valor.length >= 10)
+    valor = `${valor.slice(0, 10)}-${valor.slice(10)}`;
+
+  e.target.value = valor;
+});
+
+document.getElementById("form-apadrinhamento").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const nome = nomeInput.value.trim();
-  const telefone = telefoneInput.value.trim();
-  const telefoneLimpo = telefone.replace(/\D/g, '');
+  const nome = document.getElementById("nome").value.trim();
+  const telefone = document.getElementById("telefone").value.trim();
 
-  if (!nome || telefoneLimpo.length !== 11) {
-    alert("Preencha seu nome e um telefone válido com DDD e 9 dígitos.");
+  if (!nome || !telefone || criancaSelecionada === null) {
+    alert("Preencha todos os campos corretamente.");
     return;
   }
 
   const nomeCrianca = data[criancaSelecionada].nome;
 
-  // SALVA padrinho no padrinhos.json (simulação local)
-  fetch("padrinhos.json")
-    .then(res => res.json())
-    .then(padrinhos => {
-      padrinhos.push({
+  // Envia para a planilha via SheetDB
+  fetch("https://sheetdb.io/api/v1/bi3l27dr1xwt9", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      data: [{
         nome: nome,
         telefone: telefone,
         crianca: nomeCrianca
-      });
+      }]
+    })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.created) {
+      alert(`Obrigado, ${nome}! Você apadrinhou ${nomeCrianca}.`);
 
-      // Simulação local: Exibe no console apenas
-      console.log("Novo padrinho salvo:", padrinhos[padrinhos.length - 1]);
-
-      // Aqui seria a parte que salva no servidor (próxima etapa com backend)
-    });
-
-  alert(`Obrigado, ${nome}! Você apadrinhou ${nomeCrianca}.`);
-
-  const card = document.querySelectorAll('.card')[criancaSelecionada];
-  card.classList.add('apadrinhada');
-  const botao = card.querySelector('button');
-  if (botao) botao.remove();
-
-  modal.classList.add('hidden');
-  nomeInput.value = '';
-  telefoneInput.value = '';
-});
-
-    });
+      // Atualiza visualmente (sem salvar de verdade no criancas.json)
+      data[criancaSelecionada].apadrinhada = true;
+      carregarLista();
+      document.getElementById("form-apadrinhamento").style.display = "none";
+    } else {
+      alert("Erro ao salvar padrinho. Tente novamente.");
+    }
+  })
+  .catch(() => {
+    alert("Erro de conexão com o servidor. Tente novamente.");
   });
+});
