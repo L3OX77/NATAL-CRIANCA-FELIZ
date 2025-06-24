@@ -1,66 +1,93 @@
 const API_CRIANCAS = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=criancas";
 const API_PADRINHOS = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=padrinhos";
-let nomeSelecionado = "";
 
 async function carregarLista() {
   const resposta = await fetch(API_CRIANCAS);
   const dados = await resposta.json();
 
-  document.getElementById("lista-criancas").innerHTML = "";
+  const lista = document.getElementById("lista-criancas");
+  lista.innerHTML = "";
 
   dados.forEach(crianca => {
-    document.getElementById("lista-criancas").innerHTML += `
-      <div class="crianca">
-        <img src="imagens/${crianca.imagem}" alt="${crianca.nome}"><br>
-        <strong>${crianca.nome}</strong><br>
-        Idade: ${crianca.idade} anos<br>
-        Altura: ${crianca.altura}<br>
-        Roupa: ${crianca.roupa || 'não informado'}<br>
-        Calçado: ${crianca.calcado || 'não informado'}<br>
-        ${crianca.apadrinhada?.toLowerCase() === 'sim' ? '<span style="color: green;">✅ Apadrinhada</span>' :
-        `<button onclick="mostrarFormulario('${crianca.nome}')">Apadrinhar</button>`}
-      </div>
+    const item = document.createElement("div");
+    item.className = "card";
+
+    const imagem = crianca.imagem
+      ? `<img src="imagens/${crianca.imagem}" alt="${crianca.nome}" class="foto">`
+      : "";
+
+    const nome = crianca.nome || "Nome não informado";
+    const idade = crianca.idade ? `${crianca.idade} anos` : "não informado";
+    const altura = crianca.altura || "não informado";
+    const roupa = crianca.roupa || "não informado";
+    const calcado = crianca.calcado || "não informado";
+
+    let botao;
+    if (crianca.apadrinhada?.toLowerCase() === "sim") {
+      botao = `<button class="apadrinhada" disabled>✅ Apadrinhada</button>`;
+    } else {
+      botao = `<button class="btn-apadrinhar" data-nome="${crianca.nome}">Apadrinhar</button>`;
+    }
+
+    item.innerHTML = `
+      ${imagem}
+      <strong>${nome}</strong><br>
+      Idade: ${idade}<br>
+      Altura: ${altura}<br>
+      Roupa: ${roupa}<br>
+      Calçado: ${calcado}<br>
+      ${botao}
     `;
+
+    lista.appendChild(item);
+  });
+
+  adicionarEventosBotoes();
+}
+
+function adicionarEventosBotoes() {
+  const botoes = document.querySelectorAll(".btn-apadrinhar");
+
+  botoes.forEach(botao => {
+    botao.addEventListener("click", () => {
+      const nomeSelecionado = botao.getAttribute("data-nome");
+
+      document.getElementById("nome-crianca").textContent = nomeSelecionado;
+      document.getElementById("form-apadrinhamento").style.display = "block";
+      document.getElementById("nome").focus();
+      document.getElementById("nomeSelecionado").value = nomeSelecionado;
+    });
   });
 }
 
-function mostrarFormulario(nome) {
-  nomeSelecionado = nome;
-  document.getElementById("form-apadrinhamento").style.display = "block";
-  document.getElementById("form-titulo").innerText = `Apadrinhar ${nome}`;
-}
-
-document.getElementById("telefone").addEventListener("input", function (e) {
-  let valor = e.target.value.replace(/\D/g, "").slice(0, 11);
-  if (valor.length > 2 && valor.length <= 7)
-    valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-  else if (valor.length > 7)
-    valor = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
-  e.target.value = valor;
-});
-
-document.getElementById("form-apadrinhamento").addEventListener("submit", async function (e) {
+document.getElementById("form-apadrinhamento").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const nomePadrinho = document.getElementById("nome").value;
-  const telefone = document.getElementById("telefone").value;
+  const nome = document.getElementById("nome").value.trim();
+  const telefone = document.getElementById("telefone").value.trim();
+  const nomeCrianca = document.getElementById("nomeSelecionado").value;
 
-  // Salva os dados do padrinho
+  if (!nome || !telefone) {
+    alert("Preencha todos os campos.");
+    return;
+  }
+
+  // 1. Envia dados para a aba "padrinhos"
   await fetch(API_PADRINHOS, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      data: [{
-        nome: nomePadrinho,
-        telefone: telefone,
-        crianca: nomeSelecionado
-      }]
+      data: {
+        nome,
+        telefone,
+        crianca: nomeCrianca
+      }
     })
   });
 
-  // Atualiza status da criança para apadrinhada
-  await fetch(`${API_CRIANCAS}/nome/${nomeSelecionado}`, {
-    method: "PUT",
+  // 2. Atualiza o status de apadrinhamento da criança
+  await fetch(`${API_CRIANCAS}/search?nome=${encodeURIComponent(nomeCrianca)}`, {
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       data: {
@@ -69,12 +96,30 @@ document.getElementById("form-apadrinhamento").addEventListener("submit", async 
     })
   });
 
-  alert(`Obrigado por apadrinhar ${nomeSelecionado}!`);
-
   document.getElementById("form-apadrinhamento").reset();
   document.getElementById("form-apadrinhamento").style.display = "none";
 
-  carregarLista();
+  await carregarLista();
 });
 
+// Máscara de telefone com limite de caracteres
+const telefoneInput = document.getElementById("telefone");
+
+telefoneInput.addEventListener("input", () => {
+  let valor = telefoneInput.value.replace(/\D/g, "");
+
+  if (valor.length > 11) valor = valor.slice(0, 11);
+
+  if (valor.length <= 2) {
+    valor = `(${valor}`;
+  } else if (valor.length <= 7) {
+    valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
+  } else {
+    valor = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
+  }
+
+  telefoneInput.value = valor;
+});
+
+// Inicia
 carregarLista();
