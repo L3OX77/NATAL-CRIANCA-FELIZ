@@ -1,4 +1,4 @@
-const API_URL = "https://sheetdb.io/api/v1/bi3l27dr1xwt9";
+const API_URL = "https://sheetdb.io/api/v1/cik2u7ykpyf44";
 let nomeSelecionado = "";
 
 async function carregarLista() {
