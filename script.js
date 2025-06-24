@@ -45,6 +45,7 @@ document.getElementById("form-apadrinhamento").addEventListener("submit", async 
   const nomePadrinho = document.getElementById("nome").value;
   const telefone = document.getElementById("telefone").value;
 
+  // Salva os dados do padrinho
   await fetch(API_PADRINHOS, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -57,12 +58,23 @@ document.getElementById("form-apadrinhamento").addEventListener("submit", async 
     })
   });
 
+  // Atualiza status da criança para apadrinhada
+  await fetch(`${API_CRIANCAS}/nome/${nomeSelecionado}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      data: {
+        apadrinhada: "sim"
+      }
+    })
+  });
+
   alert(`Obrigado por apadrinhar ${nomeSelecionado}!`);
 
   document.getElementById("form-apadrinhamento").reset();
   document.getElementById("form-apadrinhamento").style.display = "none";
 
-  carregarLista(); // recarrega a lista
+  carregarLista();
 });
 
 carregarLista();
