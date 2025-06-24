@@ -1,8 +1,9 @@
-const API_URL = "https://sheetdb.io/api/v1/cik2u7ykpyf44";
+const API_CRIANCAS = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=criancas";
+const API_PADRINHOS = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=padrinhos";
 let nomeSelecionado = "";
 
 async function carregarLista() {
-  const resposta = await fetch(API_URL);
+  const resposta = await fetch(API_CRIANCAS);
   const dados = await resposta.json();
 
   document.getElementById("lista-criancas").innerHTML = "";
@@ -16,7 +17,7 @@ async function carregarLista() {
         Altura: ${crianca.altura}<br>
         Roupa: ${crianca.roupa || 'não informado'}<br>
         Calçado: ${crianca.calcado || 'não informado'}<br>
-        ${crianca.apadrinhada == 'Sim' ? '<span style="color: green;">✅ Apadrinhada</span>' :
+        ${crianca.apadrinhada?.toLowerCase() === 'sim' ? '<span style="color: green;">✅ Apadrinhada</span>' :
         `<button onclick="mostrarFormulario('${crianca.nome}')">Apadrinhar</button>`}
       </div>
     `;
@@ -40,26 +41,28 @@ document.getElementById("telefone").addEventListener("input", function (e) {
 
 document.getElementById("form-apadrinhamento").addEventListener("submit", async function (e) {
   e.preventDefault();
-  const nome = document.getElementById("nome").value;
+
+  const nomePadrinho = document.getElementById("nome").value;
   const telefone = document.getElementById("telefone").value;
 
-  await fetch(API_URL, {
+  await fetch(API_PADRINHOS, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       data: [{
-        nome_crianca: nomeSelecionado,
-        padrinho: nome,
+        nome: nomePadrinho,
         telefone: telefone,
-        apadrinhada: "Sim"
+        crianca: nomeSelecionado
       }]
     })
   });
 
   alert(`Obrigado por apadrinhar ${nomeSelecionado}!`);
+
   document.getElementById("form-apadrinhamento").reset();
   document.getElementById("form-apadrinhamento").style.display = "none";
-  carregarLista();
+
+  carregarLista(); // recarrega a lista
 });
 
 carregarLista();
