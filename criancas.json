@@ -1,0 +1,20 @@
+[
+  {
+    "nome": "Andre",
+    "idade": 8,
+    "altura": 1.15,
+    "tam_roupa": 30,
+    "tam_calcado": 33,
+    "foto": "andre.jpg",
+    "apadrinhada": false
+  },
+  {
+    "nome": "Beatriz",
+    "idade": 10,
+    "altura": 1.20,
+    "tam_roupa": 34,
+    "tam_calcado": 36,
+    "foto": "beatriz.jpg",
+    "apadrinhada": true
+  }
+]
