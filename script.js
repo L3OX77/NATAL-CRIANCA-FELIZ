@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarCriancas() {
         try {
-            const response = await fetch(`${SHEETDB_URL}/sheet/criancas`);
+            const response = await fetch(`${SHEETDB_URL}`);
             const data = await response.json();
 
             listaCriancas.innerHTML = "";
