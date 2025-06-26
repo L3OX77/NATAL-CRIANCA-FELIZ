@@ -30,7 +30,7 @@
 
     async function carregarCriancas() {
         try {
-            const resposta = await fetch(URL_BASE);
+            const resposta = await fetch(`${URL_BASE}/sheet/criancas`);
             const dados = await resposta.json();
 
             const lista = document.getElementById("lista-criancas");
@@ -40,34 +40,28 @@
                 const div = document.createElement("div");
                 div.className = "card";
 
-                const imagem = document.createElement("img");
-                imagem.src = crianca.imagem;
-                imagem.alt = crianca.nome;
-                imagem.onerror = () => imagem.src = "https://via.placeholder.com/150";
-
                 const nome = document.createElement("h3");
                 nome.textContent = crianca.nome;
 
                 const info = document.createElement("p");
                 info.innerHTML = `
-                    Idade: ${crianca.idade} anos<br>
-                    Altura: ${crianca.altura}<br>
-                    Roupa: ${crianca.roupa}<br>
-                    Calçado: ${crianca.calcado}
+                    Idade: ${crianca.idade || "-"} anos<br>
+                    Altura: ${crianca.altura || "-"}<br>
+                    Roupa: ${crianca.roupa || "-"}<br>
+                    Calçado: ${crianca.calcado || "-"}
                 `;
 
                 const botao = document.createElement("button");
                 botao.textContent = "Apadrinhar";
                 botao.className = "btn-apadrinhar";
 
-                if (crianca.apadrinhada.toLowerCase() === "sim") {
+                if (crianca.apadrinhada && crianca.apadrinhada.toLowerCase() === "sim") {
                     botao.disabled = true;
                     botao.textContent = "Apadrinhada";
                 } else {
                     botao.onclick = () => mostrarFormulario(crianca.nome);
                 }
 
-                div.appendChild(imagem);
                 div.appendChild(nome);
                 div.appendChild(info);
                 div.appendChild(botao);
@@ -92,15 +86,15 @@
         const telefone = document.getElementById("telefone").value;
 
         try {
-            // Salva o padrinho
-            await fetch(`${URL_BASE}`, {
+            // Salvar padrinho
+            await fetch(`${URL_BASE}/sheet/padrinhos`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ data: [{ nome, telefone }] })
+                body: JSON.stringify({ data: [{ nome, telefone, crianca: nomeCriancaSelecionada }] })
             });
 
-            // Atualiza status da criança
-            await fetch(`${URL_BASE}/search?nome=${nomeCriancaSelecionada}`, {
+            // Atualizar status da criança
+            await fetch(`${URL_BASE}/sheet/criancas/search?nome=${nomeCriancaSelecionada}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ data: { apadrinhada: "sim" } })
