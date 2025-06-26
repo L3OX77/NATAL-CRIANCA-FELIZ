@@ -1,115 +1,103 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #fffaf4;
-  color: #333;
-  margin: 0;
-  padding: 0;
-}
-
-header {
-  background: #c0392b;
-  color: white;
-  padding: 2rem;
-  text-align: center;
+    font-family: Arial, sans-serif;
+    background-color: #fff8f0;
+    margin: 0;
+    padding: 20px;
+    color: #333;
 }
 
 h1 {
-  margin: 0;
+    text-align: center;
+    color: #222;
 }
 
-main {
-  padding: 2rem;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+.lista-criancas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
 }
 
 .card {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 1rem;
-  text-align: center;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 220px;
+    text-align: center;
 }
 
 .card img {
-  width: 100%;
-  border-radius: 10px;
-  max-height: 200px;
-  object-fit: cover;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.card h3 {
+    margin: 10px 0 5px;
+    font-size: 18px;
+    text-transform: capitalize;
+}
+
+.card p {
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 10px 0;
 }
 
 .card button {
-  margin-top: 1rem;
-  background: #27ae60;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border-radius: 5px;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
 }
 
-.card.apadrinhada {
-  opacity: 0.6;
-  position: relative;
+.card button:disabled {
+    background-color: #ccc;
+    cursor: default;
 }
 
-.card.apadrinhada::after {
-  content: "Apadrinhada";
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #999;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+#form-container {
+    max-width: 400px;
+    margin: 40px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.modal{
-
-  position: fixed;
-  top:0;
-  left:0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
+#form-container h2 {
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-.modal-content{
-
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  max-width: 400px;
-  width: 100%;
+label {
+    display: block;
+    margin-top: 10px;
 }
 
-.modal-content h2{
-
-  margin-top: 0;
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-.modal-content input{
-
-  width: 100%;
-  padding: 0.5rem;
-  margin: 0.5rem 0 1rem;
-  border: 1px solid#ccc;
-  border-radius: 5px;
-}
-
-.botoes-modal{
-  display: flex;
-  justify-content: space-between;
-}
-
-.hidden{
-  display: none;
+button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    width: 100%;
+    font-weight: bold;
+    font-size: 15px;
 }
