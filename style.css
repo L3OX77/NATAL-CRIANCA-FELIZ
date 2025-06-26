@@ -1,103 +1,124 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #fff8f0;
-    margin: 0;
-    padding: 20px;
-    color: #333;
-}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natal: Faça uma Criança Feliz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Natal: Faça uma Criança Feliz</h1>
 
-h1 {
-    text-align: center;
-    color: #222;
-}
+    <div id="lista-criancas" class="lista-criancas"></div>
 
-.lista-criancas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-    margin-top: 20px;
-}
+    <div id="form-container" style="display: none;">
+        <h2>Apadrinhar: <span id="nome-crianca"></span></h2>
+        <form id="form-apadrinhar">
+            <label for="nome">Seu nome:</label>
+            <input type="text" id="nome" name="nome" required>
 
-.card {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    width: 220px;
-    text-align: center;
-}
+            <label for="telefone">Seu telefone:</label>
+            <input type="text" id="telefone" name="telefone" required>
 
-.card img {
-    width: 100%;
-    height: auto;
-    border-radius: 6px;
-    margin-bottom: 10px;
-}
+            <button type="submit">Confirmar Apadrinhamento</button>
+        </form>
+    </div>
 
-.card h3 {
-    margin: 10px 0 5px;
-    font-size: 18px;
-    text-transform: capitalize;
-}
+    <script>
+    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
+    let nomeCriancaSelecionada = "";
 
-.card p {
-    font-size: 14px;
-    line-height: 1.4;
-    margin: 10px 0;
-}
+    async function carregarCriancas() {
+        try {
+            const resposta = await fetch(`${URL_BASE}/sheet/criancas`);
+            if (!resposta.ok) throw new Error("Erro ao buscar planilha de crianças");
 
-.card button {
-    padding: 10px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-}
+            const dados = await resposta.json();
+            const lista = document.getElementById("lista-criancas");
+            lista.innerHTML = "";
 
-.card button:disabled {
-    background-color: #ccc;
-    cursor: default;
-}
+            dados.forEach(crianca => {
+                const div = document.createElement("div");
+                div.className = "card";
 
-#form-container {
-    max-width: 400px;
-    margin: 40px auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+                const imagem = document.createElement("img");
+                imagem.src = crianca.imagem || "https://via.placeholder.com/150";
+                imagem.alt = crianca.nome;
+                imagem.onerror = () => imagem.src = "https://via.placeholder.com/150";
 
-#form-container h2 {
-    margin-bottom: 20px;
-    text-align: center;
-}
+                const nome = document.createElement("h3");
+                nome.textContent = crianca.nome;
 
-label {
-    display: block;
-    margin-top: 10px;
-}
+                const info = document.createElement("p");
+                info.innerHTML = `
+                    Idade: ${crianca.idade || "-"} anos<br>
+                    Altura: ${crianca.altura || "-"}<br>
+                    Roupa: ${crianca.roupa || "-"}<br>
+                    Calçado: ${crianca.calcado || "-"}
+                `;
 
-input[type="text"] {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+                const botao = document.createElement("button");
+                botao.textContent = "Apadrinhar";
+                botao.className = "btn-apadrinhar";
 
-button[type="submit"] {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 6px;
-    width: 100%;
-    font-weight: bold;
-    font-size: 15px;
-}
+                if (crianca.apadrinhada?.toLowerCase() === "sim") {
+                    botao.disabled = true;
+                    botao.textContent = "Apadrinhada";
+                } else {
+                    botao.onclick = () => mostrarFormulario(crianca.nome);
+                }
+
+                div.appendChild(imagem);
+                div.appendChild(nome);
+                div.appendChild(info);
+                div.appendChild(botao);
+
+                lista.appendChild(div);
+            });
+        } catch (erro) {
+            console.error("Erro ao carregar crianças:", erro);
+            document.getElementById("lista-criancas").innerHTML = "<p>Erro ao carregar lista de crianças.</p>";
+        }
+    }
+
+    function mostrarFormulario(nome) {
+        nomeCriancaSelecionada = nome;
+        document.getElementById("form-container").style.display = "block";
+        document.getElementById("nome-crianca").textContent = nome;
+    }
+
+    document.getElementById("form-apadrinhar").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const nome = document.getElementById("nome").value;
+        const telefone = document.getElementById("telefone").value;
+
+        try {
+            // 1. Salva padrinho na aba padrinhos
+            await fetch(`${URL_BASE}/sheet/padrinhos`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ data: [{ nome, telefone, crianca: nomeCriancaSelecionada }] })
+            });
+
+            // 2. Atualiza criança como apadrinhada
+            await fetch(`${URL_BASE}/sheet/criancas/search?nome=${encodeURIComponent(nomeCriancaSelecionada)}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ data: { apadrinhada: "sim" } })
+            });
+
+            alert("Apadrinhamento confirmado!");
+            document.getElementById("form-apadrinhar").reset();
+            document.getElementById("form-container").style.display = "none";
+            carregarCriancas();
+        } catch (erro) {
+            console.error("Erro ao salvar padrinho ou atualizar criança:", erro);
+            alert("Erro ao realizar o apadrinhamento.");
+        }
+    });
+
+    carregarCriancas();
+    </script>
+</body>
+</html>
