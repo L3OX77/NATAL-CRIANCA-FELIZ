@@ -1,94 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Natal: Faça uma Criança Feliz</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fff8f0;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .card {
-      background: white;
-      padding: 15px;
-      margin: 10px auto;
-      border-radius: 10px;
-      max-width: 400px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .card img {
-      width: 100%;
-      max-height: 200px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-    .card h3 {
-      margin: 10px 0 5px;
-    }
-    .card button {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .card button.apadrinhada {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-    #form-apadrinhamento {
-      background-color: #fff;
-      padding: 20px;
-      margin-top: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button[type="submit"] {
-      margin-top: 15px;
-      background-color: #007bff;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Natal: Faça uma Criança Feliz</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <h1>Natal: Faça uma Criança Feliz</h1>
 
-  <h1>Natal: Faça uma Criança Feliz</h1>
+    <div id="lista-criancas" class="lista-criancas"></div>
 
-  <div id="lista-criancas"></div>
+    <div id="form-container" style="display: none;">
+        <h2>Apadrinhar: <span id="nome-crianca"></span></h2>
+        <form id="form-apadrinhar">
+            <label for="nome">Seu nome:</label>
+            <input type="text" id="nome" name="nome" required>
 
-  <div id="form-apadrinhamento" style="display: none;">
-    <h2>Apadrinhar: <span id="nome-crianca"></span></h2>
-    <form id="form">
-      <input type="hidden" id="nomeSelecionado" />
-      <label for="nome">Seu nome:</label>
-      <input type="text" id="nome" required />
+            <label for="telefone">Seu telefone:</label>
+            <input type="text" id="telefone" name="telefone" required>
 
-      <label for="telefone">Seu telefone:</label>
-      <input type="tel" id="telefone" required />
+            <button type="submit">Confirmar Apadrinhamento</button>
+        </form>
+    </div>
 
-      <button type="submit">Confirmar Apadrinhamento</button>
-    </form>
-  </div>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
