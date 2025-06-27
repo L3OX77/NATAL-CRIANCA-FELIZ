@@ -4,81 +4,216 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Administrativo</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #fff5ec;
+      background-color: #fcefe3;
       padding: 20px;
     }
-    .painel {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
+    h1 {
       text-align: center;
     }
-    h2 {
-      margin-bottom: 30px;
-    }
-    button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      padding: 15px;
-      font-size: 16px;
-      background-color: #007bff;
+    .btn-sair, .btn-voltar, .btn-cadastrar {
+      margin: 10px 5px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
       color: white;
+      cursor: pointer;
+    }
+    .btn-sair { background-color: #e74c3c; }
+    .btn-voltar { background-color: #3498db; }
+    .btn-cadastrar { background-color: #2ecc71; }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px;
+      display: inline-block;
+      vertical-align: top;
+      width: 200px;
+      background-color: #fff;
+    }
+    .btn-editar, .btn-excluir {
+      margin-top: 5px;
+      padding: 5px;
+      width: 80px;
+    }
+    #form-cadastro {
+      margin: 20px 0;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+    #form-cadastro input {
+      display: block;
+      margin: 10px 0;
+      padding: 8px;
+      width: 100%;
+    }
+    #form-cadastro button {
+      background-color: #27ae60;
+      color: white;
+      padding: 10px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #0056b3;
-    }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+</head>
+<body>
+  <h1>Painel Administrativo</h1>
+  <div style="text-align: center;">
+    <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar</button>
+    <button class="btn-sair" onclick="logout()">Sair</button>
+    <button class="btn-cadastrar" onclick="toggleCadastro()">Cadastrar Criança</button>
+  </div>
 
+  <div id="form-cadastro">
+    <h3>Nova Criança</h3>
+    <input type="text" id="nome" placeholder="Nome" required>
+    <input type="number" id="idade" placeholder="Idade" required>
+    <input type="text" id="altura" placeholder="Altura" required>
+    <input type="text" id="roupa" placeholder="Tamanho de Roupa" required>
+    <input type="text" id="calcado" placeholder="Número do Calçado" required>
+    <input type="text" id="imagem" placeholder="URL da Imagem (opcional)">
+    <button onclick="cadastrarCrianca()">Cadastrar</button>
+  </div>
+
+  <div id="lista-criancas"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
       authDomain: "natalfucf.firebaseapp.com",
       projectId: "natalfucf",
       storageBucket: "natalfucf.appspot.com",
       messagingSenderId: "695197434950",
-      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
-      measurementId: "G-RBKZ3JSKJW"
+      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
+    firebase.initializeApp(firebaseConfig);
 
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "admin.html";
-      }
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) window.location.href = "admin.html";
     });
 
-    window.logout = function() {
-      signOut(auth).then(() => {
-        window.location.href = "admin.html";
+    function logout() {
+      firebase.auth().signOut().then(() => window.location.href = "admin.html");
+    }
+
+    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
+
+    function toggleCadastro() {
+      const form = document.getElementById("form-cadastro");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    async function carregarCriancas() {
+      const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
+      const dados = await resposta.json();
+      const lista = document.getElementById("lista-criancas");
+      lista.innerHTML = "";
+
+      dados.forEach(crianca => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        const nome = document.createElement("h3");
+        nome.textContent = crianca.nome;
+
+        const info = document.createElement("p");
+        info.innerHTML = `
+          Idade: ${crianca.idade}<br>
+          Altura: ${crianca.altura}<br>
+          Roupa: ${crianca.roupa}<br>
+          Calçado: ${crianca.calcado}<br>
+          Apadrinhada: ${crianca.apadrinhada}
+        `;
+
+        const editarBtn = document.createElement("button");
+        editarBtn.textContent = "Editar";
+        editarBtn.className = "btn-editar";
+        editarBtn.onclick = () => editarCrianca(crianca);
+
+        const excluirBtn = document.createElement("button");
+        excluirBtn.textContent = "Excluir";
+        excluirBtn.className = "btn-excluir";
+        excluirBtn.onclick = () => excluirCrianca(crianca.nome);
+
+        div.appendChild(nome);
+        div.appendChild(info);
+        div.appendChild(editarBtn);
+        div.appendChild(excluirBtn);
+        lista.appendChild(div);
       });
     }
 
-    window.irPara = function(pagina) {
-      window.location.href = pagina;
+    async function editarCrianca(crianca) {
+      const novoNome = prompt("Novo nome:", crianca.nome);
+      if (!novoNome) return;
+
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${crianca.nome}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { nome: novoNome } })
+      });
+
+      alert("Dados atualizados.");
+      carregarCriancas();
     }
+
+    async function excluirCrianca(nome) {
+      if (!confirm(`Tem certeza que deseja excluir ${nome}?`)) return;
+
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nome}`, {
+        method: "DELETE" });
+
+      alert("Criança excluída.");
+      carregarCriancas();
+    }
+
+    async function cadastrarCrianca() {
+      const nome = document.getElementById("nome").value;
+      const idade = document.getElementById("idade").value;
+      const altura = document.getElementById("altura").value;
+      const roupa = document.getElementById("roupa").value;
+      const calcado = document.getElementById("calcado").value;
+      const imagem = document.getElementById("imagem").value;
+
+      if (!nome || !idade || !altura || !roupa || !calcado) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      const novaCrianca = {
+        nome,
+        idade,
+        altura,
+        roupa,
+        calcado,
+        imagem: imagem || "https://via.placeholder.com/150",
+        apadrinhada: "nao"
+      };
+
+      await fetch(`${URL_BASE}?sheet=criancas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [novaCrianca] })
+      });
+
+      alert("Criança cadastrada com sucesso!");
+      document.getElementById("form-cadastro").reset();
+      document.getElementById("form-cadastro").style.display = "none";
+      carregarCriancas();
+    }
+
+    carregarCriancas();
   </script>
-</head>
-<body>
-  <div class="painel">
-    <h2>Painel Administrativo</h2>
-    <button onclick="irPara('cadastrar.html')">Cadastrar Criança</button>
-    <button onclick="irPara('editar.html')">Editar/Excluir Crianças</button>
-    <button onclick="irPara('relatorio.html')">Relatório de Apadrinhamentos</button>
-    <button onclick="logout()">Sair</button>
-  </div>
 </body>
 </html>
