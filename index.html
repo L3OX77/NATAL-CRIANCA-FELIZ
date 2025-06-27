@@ -1,24 +1,148 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Natal: Faça uma Criança Feliz</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff7ef;
+      text-align: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px;
+      display: inline-block;
+      width: 250px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    button {
+      margin-top: 10px;
+      background-color: green;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #form-container {
+      margin-top: 30px;
+    }
+  </style>
 </head>
 <body>
   <h1>Natal: Faça uma Criança Feliz</h1>
 
   <div id="lista-criancas"></div>
 
-  <div id="form-container" style="display:none">
+  <div id="form-container" style="display: none;">
     <h2>Apadrinhar: <span id="nome-crianca"></span></h2>
     <form id="form-apadrinhar">
-      <input type="text" id="nome" placeholder="Seu nome" required>
-      <input type="text" id="telefone" placeholder="Seu telefone" required>
-      <button type="submit">Confirmar</button>
+      <input type="text" id="nome" placeholder="Seu nome" required /><br><br>
+      <input type="text" id="telefone" placeholder="Seu telefone" required /><br><br>
+      <button type="submit">Confirmar Apadrinhamento</button>
     </form>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
+    let nomeCriancaSelecionada = "";
+
+    async function carregarCriancas() {
+      try {
+        const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
+        const criancas = await resposta.json();
+
+        const container = document.getElementById("lista-criancas");
+        container.innerHTML = "";
+
+        criancas.forEach(crianca => {
+          const div = document.createElement("div");
+          div.className = "card";
+
+          const img = document.createElement("img");
+          img.src = crianca.imagem || "https://via.placeholder.com/150";
+          img.alt = crianca.nome;
+          img.onerror = () => img.src = "https://via.placeholder.com/150";
+
+          const nome = document.createElement("h3");
+          nome.textContent = crianca.nome;
+
+          const info = document.createElement("p");
+          info.innerHTML = `
+            Idade: ${crianca.idade} anos<br>
+            Altura: ${crianca.altura}<br>
+            Roupa: ${crianca.roupa}<br>
+            Calçado: ${crianca.calcado}
+          `;
+
+          const botao = document.createElement("button");
+          if (crianca.apadrinhada && crianca.apadrinhada.toLowerCase() === "sim") {
+            botao.disabled = true;
+            botao.textContent = "Apadrinhada";
+          } else {
+            botao.textContent = "Apadrinhar";
+            botao.onclick = () => mostrarFormulario(crianca.nome);
+          }
+
+          div.appendChild(img);
+          div.appendChild(nome);
+          div.appendChild(info);
+          div.appendChild(botao);
+
+          container.appendChild(div);
+        });
+      } catch (e) {
+        console.error("Erro ao carregar crianças:", e);
+      }
+    }
+
+    function mostrarFormulario(nome) {
+      nomeCriancaSelecionada = nome;
+      document.getElementById("nome-crianca").textContent = nome;
+      document.getElementById("form-container").style.display = "block";
+    }
+
+    document.getElementById("form-apadrinhar").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const nome = document.getElementById("nome").value.trim();
+      const telefone = document.getElementById("telefone").value.trim();
+
+      try {
+        // Salvar padrinho
+        await fetch(`${URL_BASE}?sheet=padrinhos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [{ nome, telefone, crianca: nomeCriancaSelecionada }] })
+        });
+
+        // Atualizar criança
+        await fetch(`${URL_BASE}/nome/${nomeCriancaSelecionada}?sheet=criancas`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: { apadrinhada: "sim" } })
+        });
+
+        alert("Apadrinhamento confirmado!");
+        document.getElementById("form-container").style.display = "none";
+        document.getElementById("form-apadrinhar").reset();
+        carregarCriancas();
+      } catch (e) {
+        console.error("Erro ao salvar padrinho:", e);
+      }
+    });
+
+    carregarCriancas();
+  </script>
 </body>
 </html>
