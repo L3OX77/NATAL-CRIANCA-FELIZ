@@ -1,118 +1,71 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Painel Administrativo</title>
+  <script type="module">
+    // Importa Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AlzaSyCg...MB8recuRyo",
+      authDomain: "natalfucf.firebaseapp.com",
+      projectId: "natalfucf",
+      storageBucket: "natalfucf.appspot.com",
+      messagingSenderId: "695197434950",
+      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
+      measurementId: "G-RBKZ3JSKJW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginForm = document.getElementById("login-form");
+      const painel = document.getElementById("painel");
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const senha = document.getElementById("senha").value;
+
+        try {
+          await signInWithEmailAndPassword(auth, email, senha);
+        } catch (error) {
+          alert("Erro ao fazer login: " + error.message);
+        }
+      });
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          document.getElementById("login").style.display = "none";
+          painel.style.display = "block";
+          document.getElementById("usuario-logado").innerText = user.email;
+        }
+      });
+    });
+  </script>
   <style>
-    body { font-family: Arial; background: #f9f9f9; padding: 20px; }
-    .login, .dashboard { max-width: 500px; margin: auto; }
-    input, select { width: 100%; padding: 10px; margin: 8px 0; }
-    button { padding: 10px 20px; background: green; color: white; border: none; cursor: pointer; }
-    .hidden { display: none; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    h2 { margin-top: 30px; }
+    body { font-family: sans-serif; background: #fff8f0; padding: 20px; }
+    input { margin-bottom: 10px; padding: 5px; }
+    button { padding: 8px 16px; }
   </style>
 </head>
 <body>
-
-  <div class="login" id="login-form">
-    <h1>Login do Administrador</h1>
-    <label for="usuario">Usuário:</label>
-    <select id="usuario">
-      <option value="Leo">Leo</option>
-      <option value="MIRIAM">MIRIAM</option>
-    </select>
-
-    <label for="senha">Senha:</label>
-    <input type="password" id="senha" />
-
-    <button onclick="fazerLogin()">Entrar</button>
-    <p id="erro-login" style="color: red;"></p>
+  <div id="login">
+    <h2>Login do Administrador</h2>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required><br>
+      <input type="password" id="senha" placeholder="Senha" required><br>
+      <button type="submit">Entrar</button>
+    </form>
   </div>
 
-  <div class="dashboard hidden" id="painel">
-    <h1>Painel Administrativo</h1>
-    <button onclick="logout()">Sair</button>
-
-    <h2>Lista de Crianças</h2>
-    <table id="tabela-criancas">
-      <thead>
-        <tr>
-          <th>Nome</th><th>Idade</th><th>Altura</th><th>Roupa</th><th>Calçado</th><th>Apadrinhada</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h2>Lista de Padrinhos</h2>
-    <table id="tabela-padrinhos">
-      <thead>
-        <tr><th>Nome</th><th>Telefone</th><th>Criança</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div id="painel" style="display:none;">
+    <h2>Painel Administrativo</h2>
+    <p>Logado como: <strong id="usuario-logado"></strong></p>
+    <!-- Aqui você pode adicionar as ferramentas de edição/exclusão -->
   </div>
-
-  <script>
-    const USUARIOS = {
-      "Leo": "miria2020",
-      "MIRIAM": "miria2020"
-    };
-
-    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
-
-    function fazerLogin() {
-      const usuario = document.getElementById("usuario").value;
-      const senha = document.getElementById("senha").value;
-
-      if (USUARIOS[usuario] && USUARIOS[usuario] === senha) {
-        document.getElementById("login-form").classList.add("hidden");
-        document.getElementById("painel").classList.remove("hidden");
-        carregarDados();
-      } else {
-        document.getElementById("erro-login").textContent = "Usuário ou senha inválidos.";
-      }
-    }
-
-    function logout() {
-      document.getElementById("painel").classList.add("hidden");
-      document.getElementById("login-form").classList.remove("hidden");
-      document.getElementById("senha").value = "";
-    }
-
-    async function carregarDados() {
-      try {
-        // Crianças
-        const respostaCriancas = await fetch(`${URL_BASE}?sheet=criancas`);
-        const criancas = await respostaCriancas.json();
-        const corpoCrianças = document.querySelector("#tabela-criancas tbody");
-        corpoCrianças.innerHTML = "";
-        criancas.forEach(c => {
-          const linha = `<tr>
-            <td>${c.nome}</td><td>${c.idade}</td><td>${c.altura}</td><td>${c.roupa}</td><td>${c.calcado}</td><td>${c.apadrinhada}</td>
-          </tr>`;
-          corpoCrianças.innerHTML += linha;
-        });
-
-        // Padrinhos
-        const respostaPadrinhos = await fetch(`${URL_BASE}?sheet=padrinhos`);
-        const padrinhos = await respostaPadrinhos.json();
-        const corpoPadrinhos = document.querySelector("#tabela-padrinhos tbody");
-        corpoPadrinhos.innerHTML = "";
-        padrinhos.forEach(p => {
-          const linha = `<tr>
-            <td>${p.nome}</td><td>${p.telefone}</td><td>${p.crianca || "-"}</td>
-          </tr>`;
-          corpoPadrinhos.innerHTML += linha;
-        });
-
-      } catch (e) {
-        alert("Erro ao carregar dados.");
-        console.error(e);
-      }
-    }
-  </script>
 </body>
 </html>
