@@ -2,70 +2,92 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel Administrativo</title>
-  <script type="module">
-    // Importa Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Login</title>
+  <style>
+    body {
+      background-color: #fff5ec;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .login-box {
+      max-width: 400px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      background-color: #444;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #222;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Login do Administrador</h2>
+    <input type="email" id="email" placeholder="Seu email">
+    <input type="password" id="senha" placeholder="Sua senha">
+    <button onclick="login()">Entrar</button>
+  </div>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js"></script>
+
+  <script>
+    // Configuração do Firebase
     const firebaseConfig = {
-      apiKey: "AlzaSyCg...MB8recuRyo",
+      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recuRyo",
       authDomain: "natalfucf.firebaseapp.com",
       projectId: "natalfucf",
-      storageBucket: "natalfucf.appspot.com",
+      storageBucket: "natalfucf.appspot.com", // corrigido
       messagingSenderId: "695197434950",
       appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
       measurementId: "G-RBKZ3JSKJW"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+    const auth = firebase.auth();
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const loginForm = document.getElementById("login-form");
-      const painel = document.getElementById("painel");
+    // Login
+    function login() {
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
 
-      loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = document.getElementById("email").value;
-        const senha = document.getElementById("senha").value;
-
-        try {
-          await signInWithEmailAndPassword(auth, email, senha);
-        } catch (error) {
+      auth.signInWithEmailAndPassword(email, senha)
+        .then(() => {
+          alert("Login bem-sucedido!");
+          window.location.href = "painel.html"; // ou painel_admin.html
+        })
+        .catch(error => {
+          console.error("Erro ao fazer login:", error);
           alert("Erro ao fazer login: " + error.message);
-        }
-      });
-
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          document.getElementById("login").style.display = "none";
-          painel.style.display = "block";
-          document.getElementById("usuario-logado").innerText = user.email;
-        }
-      });
-    });
+        });
+    }
   </script>
-  <style>
-    body { font-family: sans-serif; background: #fff8f0; padding: 20px; }
-    input { margin-bottom: 10px; padding: 5px; }
-    button { padding: 8px 16px; }
-  </style>
-</head>
-<body>
-  <div id="login">
-    <h2>Login do Administrador</h2>
-    <form id="login-form">
-      <input type="email" id="email" placeholder="Email" required><br>
-      <input type="password" id="senha" placeholder="Senha" required><br>
-      <button type="submit">Entrar</button>
-    </form>
-  </div>
-
-  <div id="painel" style="display:none;">
-    <h2>Painel Administrativo</h2>
-    <p>Logado como: <strong id="usuario-logado"></strong></p>
-    <!-- Aqui você pode adicionar as ferramentas de edição/exclusão -->
-  </div>
 </body>
 </html>
