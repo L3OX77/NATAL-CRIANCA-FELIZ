@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Administrador</title>
+  <style>
+    body {
+      background-color: #fff5ec;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .opcoes {
+      max-width: 600px;
+      margin: 30px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .opcoes button {
+      padding: 15px;
+      font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .opcoes button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h1>Painel do Administrador</h1>
+  <div class="opcoes">
+    <button onclick="window.location.href='cadastrar.html'">Cadastrar Criança</button>
+    <button onclick="window.location.href='editar.html'">Editar Crianças</button>
+    <button onclick="window.location.href='relatorio.html'">Ver Apadrinhamentos</button>
+    <button onclick="logout()">Sair</button>
+  </div>
+
+  <!-- Firebase Auth SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recuRyo",
+      authDomain: "natalfucf.firebaseapp.com",
+      projectId: "natalfucf",
+      storageBucket: "natalfucf.appspot.com",
+      messagingSenderId: "695197434950",
+      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Protege a página
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "admin.html";
+      }
+    });
+
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = "admin.html";
+      });
+    }
+  </script>
+</body>
+</html>
