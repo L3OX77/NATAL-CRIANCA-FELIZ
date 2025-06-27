@@ -30,10 +30,9 @@
 
     async function carregarCriancas() {
         try {
-            const resposta = await fetch(`${URL_BASE}/sheet/criancas`);
-            if (!resposta.ok) throw new Error("Erro ao buscar planilha de crianças");
-
+            const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
             const dados = await resposta.json();
+
             const lista = document.getElementById("lista-criancas");
             lista.innerHTML = "";
 
@@ -42,7 +41,7 @@
                 div.className = "card";
 
                 const imagem = document.createElement("img");
-                imagem.src = crianca.imagem || "https://via.placeholder.com/150";
+                imagem.src = crianca.imagem;
                 imagem.alt = crianca.nome;
                 imagem.onerror = () => imagem.src = "https://via.placeholder.com/150";
 
@@ -51,17 +50,17 @@
 
                 const info = document.createElement("p");
                 info.innerHTML = `
-                    Idade: ${crianca.idade || "-"} anos<br>
-                    Altura: ${crianca.altura || "-"}<br>
-                    Roupa: ${crianca.roupa || "-"}<br>
-                    Calçado: ${crianca.calcado || "-"}
+                    Idade: ${crianca.idade} anos<br>
+                    Altura: ${crianca.altura}<br>
+                    Roupa: ${crianca.roupa}<br>
+                    Calçado: ${crianca.calcado}
                 `;
 
                 const botao = document.createElement("button");
                 botao.textContent = "Apadrinhar";
                 botao.className = "btn-apadrinhar";
 
-                if (crianca.apadrinhada?.toLowerCase() === "sim") {
+                if (crianca.apadrinhada.toLowerCase() === "sim") {
                     botao.disabled = true;
                     botao.textContent = "Apadrinhada";
                 } else {
@@ -77,7 +76,6 @@
             });
         } catch (erro) {
             console.error("Erro ao carregar crianças:", erro);
-            document.getElementById("lista-criancas").innerHTML = "<p>Erro ao carregar lista de crianças.</p>";
         }
     }
 
@@ -94,15 +92,15 @@
         const telefone = document.getElementById("telefone").value;
 
         try {
-            // 1. Salva padrinho na aba padrinhos
-            await fetch(`${URL_BASE}/sheet/padrinhos`, {
+            // Salva o padrinho
+            await fetch(`${URL_BASE}?sheet=padrinhos`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ data: [{ nome, telefone, crianca: nomeCriancaSelecionada }] })
+                body: JSON.stringify({ data: [{ nome, telefone }] })
             });
 
-            // 2. Atualiza criança como apadrinhada
-            await fetch(`${URL_BASE}/sheet/criancas/search?nome=${encodeURIComponent(nomeCriancaSelecionada)}`, {
+            // Atualiza status da criança
+            await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nomeCriancaSelecionada}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ data: { apadrinhada: "sim" } })
@@ -114,7 +112,6 @@
             carregarCriancas();
         } catch (erro) {
             console.error("Erro ao salvar padrinho ou atualizar criança:", erro);
-            alert("Erro ao realizar o apadrinhamento.");
         }
     });
 
