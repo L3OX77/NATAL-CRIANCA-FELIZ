@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastrar Criança</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff5ec;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 15px;
+      width: 100%;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Cadastrar Criança</h2>
+    <form id="form-cadastro">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" required>
+
+      <label for="idade">Idade:</label>
+      <input type="number" id="idade" required>
+
+      <label for="altura">Altura:</label>
+      <input type="text" id="altura" required>
+
+      <label for="roupa">Tamanho da Roupa:</label>
+      <input type="text" id="roupa" required>
+
+      <label for="calcado">Tamanho do Calçado:</label>
+      <input type="text" id="calcado" required>
+
+      <label for="imagem">URL da Imagem:</label>
+      <input type="text" id="imagem">
+
+      <button type="submit">Salvar Criança</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("form-cadastro");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        nome: document.getElementById("nome").value,
+        idade: document.getElementById("idade").value,
+        altura: document.getElementById("altura").value,
+        roupa: document.getElementById("roupa").value,
+        calcado: document.getElementById("calcado").value,
+        imagem: document.getElementById("imagem").value || "https://via.placeholder.com/150",
+        apadrinhada: "nao"
+      };
+
+      try {
+        const resposta = await fetch("https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=criancas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: [data] })
+        });
+
+        alert("Criança cadastrada com sucesso!");
+        form.reset();
+      } catch (erro) {
+        alert("Erro ao cadastrar criança.");
+        console.error(erro);
+      }
+    });
+  </script>
+</body>
+</html>

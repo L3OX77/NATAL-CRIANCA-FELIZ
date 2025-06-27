@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Crianças</title>
+  <style>
+    body {
+      background-color: #fff5ec;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    .lista {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    .item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+    .item:last-child {
+      border-bottom: none;
+    }
+    input {
+      width: 150px;
+      margin: 5px;
+    }
+    button {
+      margin-left: 5px;
+      padding: 6px 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Editar Crianças</h2>
+  <div class="lista" id="lista-criancas"></div>
+
+  <script>
+    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
+
+    async function carregar() {
+      const res = await fetch(`${URL_BASE}?sheet=criancas`);
+      const criancas = await res.json();
+
+      const lista = document.getElementById("lista-criancas");
+      lista.innerHTML = "";
+
+      criancas.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "item";
+
+        div.innerHTML = `
+          <input type="text" value="${c.nome}" placeholder="Nome">
+          <input type="number" value="${c.idade}" placeholder="Idade">
+          <input type="text" value="${c.altura}" placeholder="Altura">
+          <input type="text" value="${c.roupa}" placeholder="Roupa">
+          <input type="text" value="${c.calcado}" placeholder="Calçado">
+          <button onclick="salvar(this, '${c.nome}')">Salvar</button>
+          <button onclick="excluir('${c.nome}')">Excluir</button>
+        `;
+
+        lista.appendChild(div);
+      });
+    }
+
+    async function salvar(botao, nomeAntigo) {
+      const inputs = botao.parentNode.querySelectorAll("input");
+      const dados = {
+        nome: inputs[0].value,
+        idade: inputs[1].value,
+        altura: inputs[2].value,
+        roupa: inputs[3].value,
+        calcado: inputs[4].value
+      };
+
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nomeAntigo}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: dados })
+      });
+
+      alert("Dados atualizados.");
+      carregar();
+    }
+
+    async function excluir(nome) {
+      if (!confirm("Tem certeza que deseja excluir esta criança?")) return;
+
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nome}`, {
+        method: "DELETE"
+      });
+
+      alert("Criança excluída.");
+      carregar();
+    }
+
+    carregar();
+  </script>
+</body>
+</html>

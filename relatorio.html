@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Apadrinhamentos</title>
+  <style>
+    body {
+      background-color: #fff5ec;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Relatório de Apadrinhamentos</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome do Padrinho</th>
+        <th>Telefone</th>
+      </tr>
+    </thead>
+    <tbody id="tabela-padrinhos"></tbody>
+  </table>
+
+  <script>
+    const URL = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=padrinhos";
+
+    async function carregarPadrinhos() {
+      try {
+        const resposta = await fetch(URL);
+        const padrinhos = await resposta.json();
+
+        const tabela = document.getElementById("tabela-padrinhos");
+        tabela.innerHTML = "";
+
+        padrinhos.forEach(p => {
+          const linha = document.createElement("tr");
+          linha.innerHTML = `
+            <td>${p.nome}</td>
+            <td>${p.telefone}</td>
+          `;
+          tabela.appendChild(linha);
+        });
+      } catch (erro) {
+        console.error("Erro ao carregar padrinhos:", erro);
+      }
+    }
+
+    carregarPadrinhos();
+  </script>
+</body>
+</html>
