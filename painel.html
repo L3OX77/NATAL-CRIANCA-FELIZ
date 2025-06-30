@@ -14,104 +14,113 @@
     h1 {
       text-align: center;
     }
-    .btn-sair, .btn-voltar, .btn-cadastrar {
-      margin: 10px 5px;
-      padding: 10px 15px;
+    .btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
       border: none;
       border-radius: 5px;
-      color: white;
       cursor: pointer;
     }
-    .btn-sair { background-color: #e74c3c; }
-    .btn-voltar { background-color: #3498db; }
-    .btn-cadastrar { background-color: #2ecc71; }
+    .hidden {
+      display: none;
+    }
+    .form-section {
+      max-width: 400px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .form-section input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
     .card {
       border: 1px solid #ccc;
       border-radius: 10px;
-      padding: 20px;
+      padding: 15px;
       margin: 10px;
-      display: inline-block;
-      vertical-align: top;
-      width: 200px;
       background-color: #fff;
-    }
-    .btn-editar, .btn-excluir {
-      margin-top: 5px;
-      padding: 5px;
-      width: 80px;
-    }
-    #form-cadastro {
-      margin: 20px 0;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      display: none;
-    }
-    #form-cadastro input {
-      display: block;
-      margin: 10px 0;
-      padding: 8px;
-      width: 100%;
-    }
-    #form-cadastro button {
-      background-color: #27ae60;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Painel Administrativo</h1>
-  <div style="text-align: center;">
-    <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar</button>
-    <button class="btn-sair" onclick="logout()">Sair</button>
-    <button class="btn-cadastrar" onclick="toggleCadastro()">Cadastrar Criança</button>
+
+  <div id="menu">
+    <button class="btn" onclick="mostrarSessao('cadastro')">Cadastrar Criança</button>
+    <button class="btn" onclick="mostrarSessao('lista')">Editar / Excluir Crianças</button>
+    <button class="btn" onclick="window.location.href='index.html'">Voltar ao Site</button>
   </div>
 
-  <div id="form-cadastro">
-    <h3>Nova Criança</h3>
-    <input type="text" id="nome" placeholder="Nome" required>
-    <input type="number" id="idade" placeholder="Idade" required>
-    <input type="text" id="altura" placeholder="Altura" required>
-    <input type="text" id="roupa" placeholder="Tamanho de Roupa" required>
-    <input type="text" id="calcado" placeholder="Número do Calçado" required>
-    <input type="text" id="imagem" placeholder="URL da Imagem (opcional)">
-    <button onclick="cadastrarCrianca()">Cadastrar</button>
+  <div id="cadastro" class="form-section hidden">
+    <h3>Cadastro de Criança</h3>
+    <input type="text" id="nome" placeholder="Nome">
+    <input type="number" id="idade" placeholder="Idade">
+    <input type="text" id="altura" placeholder="Altura">
+    <input type="text" id="roupa" placeholder="Roupa">
+    <input type="text" id="calcado" placeholder="Calçado">
+    <button class="btn" onclick="cadastrarCrianca()">Cadastrar</button>
+    <button class="btn" onclick="voltarMenu()">Voltar</button>
   </div>
 
-  <div id="lista-criancas"></div>
-
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <div id="lista" class="hidden">
+    <div id="lista-criancas"></div>
+    <button class="btn" onclick="voltarMenu()">Voltar</button>
+  </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
-      authDomain: "natalfucf.firebaseapp.com",
-      projectId: "natalfucf",
-      storageBucket: "natalfucf.appspot.com",
-      messagingSenderId: "695197434950",
-      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) window.location.href = "admin.html";
-    });
-
-    function logout() {
-      firebase.auth().signOut().then(() => window.location.href = "admin.html");
-    }
-
     const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
 
-    function toggleCadastro() {
-      const form = document.getElementById("form-cadastro");
-      form.style.display = form.style.display === "none" ? "block" : "none";
+    function mostrarSessao(sessao) {
+      document.getElementById("menu").classList.add("hidden");
+      document.getElementById("cadastro").classList.add("hidden");
+      document.getElementById("lista").classList.add("hidden");
+      document.getElementById(sessao).classList.remove("hidden");
+
+      if (sessao === "lista") carregarCriancas();
+    }
+
+    function voltarMenu() {
+      document.getElementById("menu").classList.remove("hidden");
+      document.getElementById("cadastro").classList.add("hidden");
+      document.getElementById("lista").classList.add("hidden");
+    }
+
+    async function cadastrarCrianca() {
+      const nome = document.getElementById("nome").value;
+      const idade = document.getElementById("idade").value;
+      const altura = document.getElementById("altura").value;
+      const roupa = document.getElementById("roupa").value;
+      const calcado = document.getElementById("calcado").value;
+
+      if (!nome || !idade || !altura || !roupa || !calcado) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      const novaCrianca = {
+        nome,
+        idade,
+        altura,
+        roupa,
+        calcado,
+        imagem: "", // imagem deixada em branco conforme solicitado
+        apadrinhada: "nao"
+      };
+
+      await fetch(`${URL_BASE}?sheet=criancas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [novaCrianca] })
+      });
+
+      alert("Criança cadastrada com sucesso!");
+      document.getElementById("cadastro").querySelectorAll("input").forEach(el => el.value = "");
     }
 
     async function carregarCriancas() {
@@ -123,97 +132,26 @@
       dados.forEach(crianca => {
         const div = document.createElement("div");
         div.className = "card";
-
-        const nome = document.createElement("h3");
-        nome.textContent = crianca.nome;
-
-        const info = document.createElement("p");
-        info.innerHTML = `
+        div.innerHTML = `
+          <strong>${crianca.nome}</strong><br>
           Idade: ${crianca.idade}<br>
           Altura: ${crianca.altura}<br>
           Roupa: ${crianca.roupa}<br>
           Calçado: ${crianca.calcado}<br>
-          Apadrinhada: ${crianca.apadrinhada}
+          Apadrinhada: ${crianca.apadrinhada}<br>
+          <button onclick="excluirCrianca('${crianca.nome}')">Excluir</button>
         `;
-
-        const editarBtn = document.createElement("button");
-        editarBtn.textContent = "Editar";
-        editarBtn.className = "btn-editar";
-        editarBtn.onclick = () => editarCrianca(crianca);
-
-        const excluirBtn = document.createElement("button");
-        excluirBtn.textContent = "Excluir";
-        excluirBtn.className = "btn-excluir";
-        excluirBtn.onclick = () => excluirCrianca(crianca.nome);
-
-        div.appendChild(nome);
-        div.appendChild(info);
-        div.appendChild(editarBtn);
-        div.appendChild(excluirBtn);
         lista.appendChild(div);
       });
     }
 
-    async function editarCrianca(crianca) {
-      const novoNome = prompt("Novo nome:", crianca.nome);
-      if (!novoNome) return;
-
-      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${crianca.nome}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { nome: novoNome } })
-      });
-
-      alert("Dados atualizados.");
-      carregarCriancas();
-    }
-
     async function excluirCrianca(nome) {
-      if (!confirm(`Tem certeza que deseja excluir ${nome}?`)) return;
-
+      if (!confirm(`Excluir ${nome}?`)) return;
       await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nome}`, {
-        method: "DELETE" });
-
-      alert("Criança excluída.");
-      carregarCriancas();
-    }
-
-    async function cadastrarCrianca() {
-      const nome = document.getElementById("nome").value;
-      const idade = document.getElementById("idade").value;
-      const altura = document.getElementById("altura").value;
-      const roupa = document.getElementById("roupa").value;
-      const calcado = document.getElementById("calcado").value;
-      const imagem = document.getElementById("imagem").value;
-
-      if (!nome || !idade || !altura || !roupa || !calcado) {
-        alert("Preencha todos os campos obrigatórios.");
-        return;
-      }
-
-      const novaCrianca = {
-        nome,
-        idade,
-        altura,
-        roupa,
-        calcado,
-        imagem: imagem || "https://via.placeholder.com/150",
-        apadrinhada: "nao"
-      };
-
-      await fetch(`${URL_BASE}?sheet=criancas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: [novaCrianca] })
+        method: "DELETE"
       });
-
-      alert("Criança cadastrada com sucesso!");
-      document.getElementById("form-cadastro").reset();
-      document.getElementById("form-cadastro").style.display = "none";
       carregarCriancas();
     }
-
-    carregarCriancas();
   </script>
 </body>
 </html>
