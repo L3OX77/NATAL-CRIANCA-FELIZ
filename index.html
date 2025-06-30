@@ -54,6 +54,11 @@
     </form>
   </div>
 
+  <!-- Botão administrativo ao final -->
+  <div style="margin-top: 40px;">
+    <button onclick="window.location.href='login.html'" style="background-color: #3498db;">Painel Administrativo</button>
+  </div>
+
   <script>
     const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
     let nomeCriancaSelecionada = "";
@@ -119,14 +124,12 @@
       const telefone = document.getElementById("telefone").value.trim();
 
       try {
-        // Salvar padrinho
         await fetch(`${URL_BASE}?sheet=padrinhos`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data: [{ nome, telefone, crianca: nomeCriancaSelecionada }] })
         });
 
-        // Atualizar criança
         await fetch(`${URL_BASE}/nome/${nomeCriancaSelecionada}?sheet=criancas`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
