@@ -1,40 +1,63 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login do Administrador</title>
+  <title>Painel Administrativo</title>
   <link rel="stylesheet" href="style.css">
-
-
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_DOMINIO.firebaseapp.com",
-    projectId: "SEU_PROJETO_ID",
-    appId: "SEU_APP_ID"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  onAuthStateChanged(auth, user => {
-    if (!user) {
-      // Redireciona de volta para o login se não estiver logado
-      window.location.href = "login.html";
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fcefe3;
+      padding: 20px;
     }
-  });
-</script>
-
-  <!-- Firebase SDKs via CDN -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
-  <!-- Configuração Firebase -->
+    h1 {
+      text-align: center;
+    }
+    .btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .form-section {
+      max-width: 400px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .form-section input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px;
+      background-color: #fff;
+    }
+    .card button {
+      margin-top: 10px;
+      background-color: green;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
@@ -46,75 +69,180 @@
       measurementId: "G-RBKZ3JSKJW"
     };
     firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
   </script>
-
-  <style>
-    body {
-      background: #fff6ee;
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .login-container {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #aaa;
-      width: 300px;
-    }
-
-    .login-container h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .login-container input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    .login-container button {
-      width: 100%;
-      padding: 10px;
-      background-color: #34495e;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .login-container button:hover {
-      background-color: #2c3e50;
-    }
-  </style>
 </head>
 <body>
-  <div class="login-container">
-    <h2>Login do Administrador</h2>
-    <input type="text" id="email" placeholder="Email" />
-    <input type="password" id="senha" placeholder="Senha" />
-    <button onclick="login()">Entrar</button>
+  <h1>Painel Administrativo</h1>
+  <div id="menu">
+    <button class="btn" onclick="mostrarSessao('cadastro')">Cadastrar Criança</button>
+    <button class="btn" onclick="mostrarSessao('lista')">Editar / Excluir Crianças</button>
+    <button class="btn" onclick="window.location.href='index.html'">Voltar ao Site</button>
+    <button class="btn" onclick="logout()">Sair</button>
+  </div>
+
+  <div id="cadastro" class="form-section hidden">
+    <h3>Cadastro de Criança</h3>
+    <input type="text" id="nome" placeholder="Nome">
+    <input type="number" id="idade" placeholder="Idade">
+    <input type="text" id="altura" placeholder="Altura">
+    <input type="text" id="roupa" placeholder="Roupa">
+    <input type="text" id="calcado" placeholder="Calçado">
+    <button class="btn" onclick="cadastrarCrianca()">Cadastrar</button>
+    <button class="btn" onclick="voltarMenu()">Voltar</button>
+  </div>
+
+  <div id="lista" class="hidden">
+    <div id="lista-criancas"></div>
+    <div id="edicao" class="form-section hidden">
+      <h3>Editar Criança</h3>
+      <input type="text" id="edit-nome" placeholder="Nome" readonly>
+      <input type="number" id="edit-idade" placeholder="Idade">
+      <input type="text" id="edit-altura" placeholder="Altura">
+      <input type="text" id="edit-roupa" placeholder="Roupa">
+      <input type="text" id="edit-calcado" placeholder="Calçado">
+      <button class="btn" onclick="salvarEdicao()">Salvar</button>
+      <button class="btn" onclick="fecharEdicao()">Cancelar</button>
+    </div>
+    <button class="btn" onclick="voltarMenu()">Voltar</button>
   </div>
 
   <script>
-    function login() {
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
+    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
 
-      firebase.auth().signInWithEmailAndPassword(email, senha)
-        .then(() => {
-          window.location.href = "painel.html";
-        })
-        .catch((error) => {
-          alert("Erro ao fazer login: " + error.message);
-        });
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    }
+
+    function mostrarSessao(sessao) {
+      document.getElementById("menu").classList.add("hidden");
+      document.getElementById("cadastro").classList.add("hidden");
+      document.getElementById("lista").classList.add("hidden");
+      document.getElementById(sessao).classList.remove("hidden");
+      if (sessao === "lista") carregarCriancas();
+    }
+
+    function voltarMenu() {
+      document.getElementById("menu").classList.remove("hidden");
+      document.getElementById("cadastro").classList.add("hidden");
+      document.getElementById("lista").classList.add("hidden");
+      document.getElementById("edicao").classList.add("hidden");
+    }
+
+    async function cadastrarCrianca() {
+      const nome = document.getElementById("nome").value;
+      const idade = document.getElementById("idade").value;
+      const altura = document.getElementById("altura").value;
+      const roupa = document.getElementById("roupa").value;
+      const calcado = document.getElementById("calcado").value;
+
+      if (!nome || !idade || !altura || !roupa || !calcado) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      const novaCrianca = {
+        nome,
+        idade,
+        altura,
+        roupa,
+        calcado,
+        imagem: "",
+        apadrinhada: "nao"
+      };
+
+      await fetch(`${URL_BASE}?sheet=criancas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [novaCrianca] })
+      });
+
+      alert("Criança cadastrada com sucesso!");
+      document.getElementById("cadastro").querySelectorAll("input").forEach(el => el.value = "");
+    }
+
+    async function carregarCriancas() {
+      const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
+      const dados = await resposta.json();
+      const lista = document.getElementById("lista-criancas");
+      lista.innerHTML = "";
+
+      dados.forEach(crianca => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <strong>${crianca.nome}</strong><br>
+          Idade: ${crianca.idade}<br>
+          Altura: ${crianca.altura}<br>
+          Roupa: ${crianca.roupa}<br>
+          Calçado: ${crianca.calcado}<br>
+          Apadrinhada: ${crianca.apadrinhada}<br>
+          <button onclick="editarCrianca('${crianca.nome}', '${crianca.idade}', '${crianca.altura}', '${crianca.roupa}', '${crianca.calcado}')">Editar</button>
+          <button onclick="excluirCrianca('${crianca.nome}')">Excluir</button>
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    function editarCrianca(nome, idade, altura, roupa, calcado) {
+      document.getElementById("edit-nome").value = nome;
+      document.getElementById("edit-idade").value = idade;
+      document.getElementById("edit-altura").value = altura;
+      document.getElementById("edit-roupa").value = roupa;
+      document.getElementById("edit-calcado").value = calcado;
+      document.getElementById("edicao").classList.remove("hidden");
+    }
+
+    async function salvarEdicao() {
+      const nome = document.getElementById("edit-nome").value;
+      const idade = document.getElementById("edit-idade").value;
+      const altura = document.getElementById("edit-altura").value;
+      const roupa = document.getElementById("edit-roupa").value;
+      const calcado = document.getElementById("edit-calcado").value;
+
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${encodeURIComponent(nome)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { idade, altura, roupa, calcado } })
+      });
+
+      alert("Dados atualizados com sucesso!");
+      document.getElementById("edicao").classList.add("hidden");
+      carregarCriancas();
+    }
+
+    function fecharEdicao() {
+      document.getElementById("edicao").classList.add("hidden");
+    }
+
+    async function excluirCrianca(nome) {
+      if (!confirm(`Excluir ${nome}?`)) return;
+
+      const dadosVazios = {
+        nome: "",
+        idade: "",
+        altura: "",
+        roupa: "",
+        calcado: "",
+        imagem: "",
+        apadrinhada: ""
+      };
+
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${encodeURIComponent(nome)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: dadosVazios })
+      });
+
+      alert("Criança excluída (linha apagada).");
+      carregarCriancas();
     }
   </script>
 </body>
