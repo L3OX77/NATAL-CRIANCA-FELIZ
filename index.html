@@ -44,15 +44,29 @@
       display: block;
       margin-bottom: 8px;
     }
+    .card button {
+      margin-top: 10px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .rodape {
+      margin-top: 40px;
+    }
   </style>
 </head>
 <body>
   <h1>Natal - Faça uma Criança Feliz</h1>
   <p>Escolha uma criança para apadrinhar e transforme o Natal dela!</p>
 
-  <button class="btn" onclick="window.location.href='login.html'">Painel Administrativo</button>
-
   <div class="lista-criancas" id="lista-criancas"></div>
+
+  <div class="rodape">
+    <button class="btn" onclick="window.location.href='login.html'">Painel Administrativo</button>
+  </div>
 
   <script>
     const URL = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=criancas";
@@ -67,17 +81,37 @@
         if (c.nome && c.nome.trim() !== "") {
           const card = document.createElement("div");
           card.className = "card";
-          card.innerHTML = `
+
+          let html = `
             <strong>${c.nome}</strong>
             Idade: ${c.idade}<br>
             Altura: ${c.altura}<br>
             Roupa: ${c.roupa}<br>
             Calçado: ${c.calcado}<br>
-            Apadrinhada: ${c.apadrinhada}
+            Apadrinhada: ${c.apadrinhada}<br>
           `;
+
+          if (c.apadrinhada.toLowerCase() === "não" || c.apadrinhada.toLowerCase() === "nao") {
+            html += `<button onclick="apadrinhar('${c.nome}')">Apadrinhar</button>`;
+          }
+
+          card.innerHTML = html;
           container.appendChild(card);
         }
       });
+    }
+
+    async function apadrinhar(nome) {
+      if (!confirm(`Tem certeza que deseja apadrinhar ${nome}?`)) return;
+
+      await fetch(`https://sheetdb.io/api/v1/59vqa5g6txcd4/search?sheet=criancas&nome=${encodeURIComponent(nome)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { apadrinhada: "sim" } })
+      });
+
+      alert(`${nome} foi apadrinhado com sucesso!`);
+      carregarCriancas();
     }
 
     carregarCriancas();
