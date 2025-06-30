@@ -4,71 +4,83 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Natal - Faça uma Criança Feliz</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
   <style>
     body {
-      font-family: Arial, sans-serif;
       background-color: #fcefe3;
+      font-family: Arial, sans-serif;
       padding: 20px;
       text-align: center;
     }
-
     h1 {
       color: #c0392b;
     }
-
     .btn {
       margin-top: 20px;
       padding: 10px 20px;
       background-color: #3498db;
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      border-radius: 5px;
       cursor: pointer;
     }
-
-    .btn:hover {
-      background-color: #2980b9;
+    .lista-criancas {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 220px;
+      text-align: left;
+    }
+    .card strong {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 8px;
     }
   </style>
-  <!-- Firebase Auth SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
   <h1>Natal - Faça uma Criança Feliz</h1>
   <p>Escolha uma criança para apadrinhar e transforme o Natal dela!</p>
 
-  <!-- Botão para acessar o Painel Admin -->
-  <button class="btn" onclick="acessarPainel()">Painel Administrativo</button>
+  <button class="btn" onclick="window.location.href='login.html'">Painel Administrativo</button>
 
-  <!-- Aqui entraria a listagem de crianças e ações de apadrinhar -->
-  <!-- ... -->
+  <div class="lista-criancas" id="lista-criancas"></div>
 
   <script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
-      authDomain: "natalfucf.firebaseapp.com",
-      projectId: "natalfucf",
-      storageBucket: "natalfucf.appspot.com",
-      messagingSenderId: "695197434950",
-      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
-      measurementId: "G-RBKZ3JSKJW"
-    };
+    const URL = "https://sheetdb.io/api/v1/59vqa5g6txcd4?sheet=criancas";
 
-    firebase.initializeApp(firebaseConfig);
+    async function carregarCriancas() {
+      const resposta = await fetch(URL);
+      const criancas = await resposta.json();
+      const container = document.getElementById("lista-criancas");
+      container.innerHTML = "";
 
-    function acessarPainel() {
-      firebase.auth().onAuthStateChanged((user) => {
-        if (user) {
-          window.location.href = "admin.html"; // já está logado
-        } else {
-          window.location.href = "login.html"; // precisa logar
+      criancas.forEach(c => {
+        if (c.nome && c.nome.trim() !== "") {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <strong>${c.nome}</strong>
+            Idade: ${c.idade}<br>
+            Altura: ${c.altura}<br>
+            Roupa: ${c.roupa}<br>
+            Calçado: ${c.calcado}<br>
+            Apadrinhada: ${c.apadrinhada}
+          `;
+          container.appendChild(card);
         }
       });
     }
+
+    carregarCriancas();
   </script>
 </body>
 </html>
