@@ -195,17 +195,17 @@
     function fecharEdicao() {
       document.getElementById("edicao").classList.add("hidden");
     }
+async function excluirCrianca(nome) {
+  if (!confirm(`Excluir ${nome}?`)) return;
 
-    async function excluirCrianca(nome) {
-      if (!confirm(`Excluir ${nome}?`)) return;
+  await fetch(`${URL_BASE}/nome/${encodeURIComponent(nome)}?sheet=criancas`, {
+    method: "DELETE"
+  });
 
-      await fetch(`${URL_BASE}/nome/${encodeURIComponent(nome)}?sheet=criancas`, {
-        method: "DELETE"
-      });
+  alert("Criança excluída com sucesso!");
+  carregarCriancas();
+}
 
-      alert("Criança excluída com sucesso!");
-      carregarCriancas();
-    }
   </script>
 </body>
 </html>
