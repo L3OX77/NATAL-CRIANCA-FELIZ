@@ -3,98 +3,204 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editar Crianças</title>
+  <title>Painel Administrativo</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     body {
-      background-color: #fff5ec;
       font-family: Arial, sans-serif;
+      background-color: #fcefe3;
       padding: 20px;
     }
-    h2 {
+    h1 {
       text-align: center;
     }
-    .lista {
-      max-width: 800px;
+    .btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .form-section {
+      max-width: 400px;
       margin: 20px auto;
-      background: white;
+      background-color: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
     }
-    .item {
-      border-bottom: 1px solid #ccc;
-      padding: 10px 0;
+    .form-section input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
     }
-    .item:last-child {
-      border-bottom: none;
-    }
-    input {
-      width: 150px;
-      margin: 5px;
-    }
-    button {
-      margin-left: 5px;
-      padding: 6px 10px;
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px;
+      background-color: #fff;
     }
   </style>
 </head>
 <body>
-  <h2>Editar Crianças</h2>
-  <div class="lista" id="lista-criancas"></div>
+  <h1>Painel Administrativo</h1>
+
+  <div id="menu">
+    <button class="btn" onclick="mostrarSessao('cadastro')">Cadastrar Criança</button>
+    <button class="btn" onclick="mostrarSessao('lista')">Editar / Excluir Crianças</button>
+    <button class="btn" onclick="window.location.href='index.html'">Voltar ao Site</button>
+  </div>
+
+  <div id="cadastro" class="form-section hidden">
+    <h3>Cadastro de Criança</h3>
+    <input type="text" id="nome" placeholder="Nome">
+    <input type="number" id="idade" placeholder="Idade">
+    <input type="text" id="altura" placeholder="Altura">
+    <input type="text" id="roupa" placeholder="Roupa">
+    <input type="text" id="calcado" placeholder="Calçado">
+    <button class="btn" onclick="cadastrarCrianca()">Cadastrar</button>
+    <button class="btn" onclick="voltarMenu()">Voltar</button>
+  </div>
+
+  <div id="lista" class="hidden">
+    <div id="lista-criancas"></div>
+    <div id="edicao" class="form-section hidden">
+      <h3>Editar Criança</h3>
+      <input type="text" id="edit-nome" placeholder="Nome" readonly>
+      <input type="number" id="edit-idade" placeholder="Idade">
+      <input type="text" id="edit-altura" placeholder="Altura">
+      <input type="text" id="edit-roupa" placeholder="Roupa">
+      <input type="text" id="edit-calcado" placeholder="Calçado">
+      <button class="btn" onclick="salvarEdicao()">Salvar</button>
+      <button class="btn" onclick="fecharEdicao()">Cancelar</button>
+    </div>
+    <button class="btn" onclick="voltarMenu()">Voltar</button>
+  </div>
 
   <script>
     const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
 
-    async function carregar() {
-      const res = await fetch(`${URL_BASE}?sheet=criancas`);
-      const criancas = await res.json();
+    function mostrarSessao(sessao) {
+      document.getElementById("menu").classList.add("hidden");
+      document.getElementById("cadastro").classList.add("hidden");
+      document.getElementById("lista").classList.add("hidden");
+      document.getElementById(sessao).classList.remove("hidden");
+      if (sessao === "lista") carregarCriancas();
+    }
 
+    function voltarMenu() {
+      document.getElementById("menu").classList.remove("hidden");
+      document.getElementById("cadastro").classList.add("hidden");
+      document.getElementById("lista").classList.add("hidden");
+      document.getElementById("edicao").classList.add("hidden");
+    }
+
+    async function cadastrarCrianca() {
+      const nome = document.getElementById("nome").value;
+      const idade = document.getElementById("idade").value;
+      const altura = document.getElementById("altura").value;
+      const roupa = document.getElementById("roupa").value;
+      const calcado = document.getElementById("calcado").value;
+
+      if (!nome || !idade || !altura || !roupa || !calcado) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      const novaCrianca = {
+        nome,
+        idade,
+        altura,
+        roupa,
+        calcado,
+        imagem: "",
+        apadrinhada: "nao"
+      };
+
+      await fetch(`${URL_BASE}?sheet=criancas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: [novaCrianca] })
+      });
+
+      alert("Criança cadastrada com sucesso!");
+      document.getElementById("cadastro").querySelectorAll("input").forEach(el => el.value = "");
+    }
+
+    async function carregarCriancas() {
+      const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
+      const dados = await resposta.json();
       const lista = document.getElementById("lista-criancas");
       lista.innerHTML = "";
 
-      criancas.forEach(c => {
+      dados.forEach(crianca => {
         const div = document.createElement("div");
-        div.className = "item";
-
+        div.className = "card";
         div.innerHTML = `
-          <input type="text" value="${c.nome}" placeholder="Nome">
-          <input type="number" value="${c.idade}" placeholder="Idade">
-          <input type="text" value="${c.altura}" placeholder="Altura">
-          <input type="text" value="${c.roupa}" placeholder="Roupa">
-          <input type="text" value="${c.calcado}" placeholder="Calçado">
-          <button onclick="salvar(this, '${c.nome}')">Salvar</button>
-          <button onclick="excluir('${c.nome}')">Excluir</button>
+          <strong>${crianca.nome}</strong><br>
+          Idade: ${crianca.idade}<br>
+          Altura: ${crianca.altura}<br>
+          Roupa: ${crianca.roupa}<br>
+          Calçado: ${crianca.calcado}<br>
+          Apadrinhada: ${crianca.apadrinhada}<br>
+          <button onclick="editarCrianca('${crianca.nome}', '${crianca.idade}', '${crianca.altura}', '${crianca.roupa}', '${crianca.calcado}')">Editar</button>
+          <button onclick="excluirCrianca('${crianca.nome}')">Excluir</button>
         `;
-
         lista.appendChild(div);
       });
     }
 
-    async function salvar(botao, nomeAntigo) {
-      const inputs = botao.parentNode.querySelectorAll("input");
-      const dados = {
-        nome: inputs[0].value,
-        idade: inputs[1].value,
-        altura: inputs[2].value,
-        roupa: inputs[3].value,
-        calcado: inputs[4].value
-      };
+    function editarCrianca(nome, idade, altura, roupa, calcado) {
+      document.getElementById("edit-nome").value = nome;
+      document.getElementById("edit-idade").value = idade;
+      document.getElementById("edit-altura").value = altura;
+      document.getElementById("edit-roupa").value = roupa;
+      document.getElementById("edit-calcado").value = calcado;
+      document.getElementById("edicao").classList.remove("hidden");
+    }
 
-      async function excluirCrianca(nome) {
-  if (!confirm(`Excluir ${nome}?`)) return;
+    async function salvarEdicao() {
+      const nome = document.getElementById("edit-nome").value;
+      const idade = document.getElementById("edit-idade").value;
+      const altura = document.getElementById("edit-altura").value;
+      const roupa = document.getElementById("edit-roupa").value;
+      const calcado = document.getElementById("edit-calcado").value;
 
-  try {
-    await fetch(`${URL_BASE}/nome/${nome}?sheet=criancas`, {
-      method: "DELETE"
-    });
-    alert("Criança excluída com sucesso!");
-    carregarCriancas();
-  } catch (erro) {
-    alert("Erro ao excluir criança.");
-    console.error(erro);
-  }
-}
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nome}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { idade, altura, roupa, calcado } })
+      });
 
+      alert("Dados atualizados com sucesso!");
+      document.getElementById("edicao").classList.add("hidden");
+      carregarCriancas();
+    }
+
+    function fecharEdicao() {
+      document.getElementById("edicao").classList.add("hidden");
+    }
+
+    async function excluirCrianca(nome) {
+      if (!confirm(`Excluir ${nome}?`)) return;
+
+      try {
+        await fetch(`${URL_BASE}/nome/${nome}?sheet=criancas`, {
+          method: "DELETE"
+        });
+        alert("Criança excluída com sucesso!");
+        carregarCriancas();
+      } catch (erro) {
+        alert("Erro ao excluir criança.");
+        console.error(erro);
+      }
+    }
   </script>
 </body>
 </html>
