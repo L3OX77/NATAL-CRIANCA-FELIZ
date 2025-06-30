@@ -80,28 +80,21 @@
         calcado: inputs[4].value
       };
 
-      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nomeAntigo}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: dados })
-      });
+      async function excluirCrianca(nome) {
+  if (!confirm(`Excluir ${nome}?`)) return;
 
-      alert("Dados atualizados.");
-      carregar();
-    }
+  try {
+    await fetch(`${URL_BASE}/nome/${nome}?sheet=criancas`, {
+      method: "DELETE"
+    });
+    alert("Criança excluída com sucesso!");
+    carregarCriancas();
+  } catch (erro) {
+    alert("Erro ao excluir criança.");
+    console.error(erro);
+  }
+}
 
-    async function excluir(nome) {
-      if (!confirm("Tem certeza que deseja excluir esta criança?")) return;
-
-      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nome}`, {
-        method: "DELETE"
-      });
-
-      alert("Criança excluída.");
-      carregar();
-    }
-
-    carregar();
   </script>
 </body>
 </html>
