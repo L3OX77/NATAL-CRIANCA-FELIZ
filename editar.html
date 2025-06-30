@@ -46,6 +46,15 @@
       margin: 10px;
       background-color: #fff;
     }
+    .card button {
+      margin-top: 10px;
+      background-color: green;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -172,7 +181,7 @@
       const roupa = document.getElementById("edit-roupa").value;
       const calcado = document.getElementById("edit-calcado").value;
 
-      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${nome}`, {
+      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${encodeURIComponent(nome)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: { idade, altura, roupa, calcado } })
@@ -190,16 +199,12 @@
     async function excluirCrianca(nome) {
       if (!confirm(`Excluir ${nome}?`)) return;
 
-      try {
-        await fetch(`${URL_BASE}/nome/${nome}?sheet=criancas`, {
-          method: "DELETE"
-        });
-        alert("Criança excluída com sucesso!");
-        carregarCriancas();
-      } catch (erro) {
-        alert("Erro ao excluir criança.");
-        console.error(erro);
-      }
+      await fetch(`${URL_BASE}/nome/${encodeURIComponent(nome)}?sheet=criancas`, {
+        method: "DELETE"
+      });
+
+      alert("Criança excluída com sucesso!");
+      carregarCriancas();
     }
   </script>
 </body>
