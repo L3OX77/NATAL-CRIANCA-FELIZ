@@ -3,153 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Natal: Faça uma Criança Feliz</title>
+  <title>Natal - Faça uma Criança Feliz</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #fff7ef;
-      text-align: center;
+      background-color: #fcefe3;
       padding: 20px;
+      text-align: center;
     }
-    .card {
-      background: white;
-      border-radius: 10px;
-      padding: 15px;
-      margin: 10px;
-      display: inline-block;
-      width: 250px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+
+    h1 {
+      color: #c0392b;
     }
-    img {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-    button {
-      margin-top: 10px;
-      background-color: green;
+
+    .btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #3498db;
       color: white;
       border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
+      border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
     }
-    #form-container {
-      margin-top: 30px;
+
+    .btn:hover {
+      background-color: #2980b9;
     }
   </style>
+  <!-- Firebase Auth SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
-  <h1>Natal: Faça uma Criança Feliz</h1>
+  <h1>Natal - Faça uma Criança Feliz</h1>
+  <p>Escolha uma criança para apadrinhar e transforme o Natal dela!</p>
 
-  <div id="lista-criancas"></div>
+  <!-- Botão para acessar o Painel Admin -->
+  <button class="btn" onclick="acessarPainel()">Painel Administrativo</button>
 
-  <div id="form-container" style="display: none;">
-    <h2>Apadrinhar: <span id="nome-crianca"></span></h2>
-    <form id="form-apadrinhar">
-      <input type="text" id="nome" placeholder="Seu nome" required /><br><br>
-      <input type="text" id="telefone" placeholder="Seu telefone" required /><br><br>
-      <button type="submit">Confirmar Apadrinhamento</button>
-    </form>
-  </div>
+  <!-- Aqui entraria a listagem de crianças e ações de apadrinhar -->
+  <!-- ... -->
 
   <script>
-    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
-    let nomeCriancaSelecionada = "";
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
+      authDomain: "natalfucf.firebaseapp.com",
+      projectId: "natalfucf",
+      storageBucket: "natalfucf.appspot.com",
+      messagingSenderId: "695197434950",
+      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
+      measurementId: "G-RBKZ3JSKJW"
+    };
 
-    async function carregarCriancas() {
-      try {
-        const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
-        const criancas = await resposta.json();
+    firebase.initializeApp(firebaseConfig);
 
-        const container = document.getElementById("lista-criancas");
-        container.innerHTML = "";
-
-        criancas.forEach(crianca => {
-          const div = document.createElement("div");
-          div.className = "card";
-
-          const img = document.createElement("img");
-          img.src = crianca.imagem || "https://dummyimage.com/150x150/cccccc/000000&text=Foto";
-          img.alt = crianca.nome;
-          img.onerror = () => img.src = "https://via.placeholder.com/150";
-
-          const nome = document.createElement("h3");
-          nome.textContent = crianca.nome;
-
-          const info = document.createElement("p");
-          info.innerHTML = `
-            Idade: ${crianca.idade} anos<br>
-            Altura: ${crianca.altura}<br>
-            Roupa: ${crianca.roupa}<br>
-            Calçado: ${crianca.calcado}
-          `;
-
-          const botao = document.createElement("button");
-          if (crianca.apadrinhada && crianca.apadrinhada.toLowerCase() === "sim") {
-            botao.disabled = true;
-            botao.textContent = "Apadrinhada";
-          } else {
-            botao.textContent = "Apadrinhar";
-            botao.onclick = () => mostrarFormulario(crianca.nome);
-          }
-
-          div.appendChild(img);
-          div.appendChild(nome);
-          div.appendChild(info);
-          div.appendChild(botao);
-
-          container.appendChild(div);
-        });
-      } catch (e) {
-        console.error("Erro ao carregar crianças:", e);
-      }
+    function acessarPainel() {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          window.location.href = "admin.html"; // já está logado
+        } else {
+          window.location.href = "login.html"; // precisa logar
+        }
+      });
     }
-
-    function mostrarFormulario(nome) {
-      nomeCriancaSelecionada = nome;
-      document.getElementById("nome-crianca").textContent = nome;
-      document.getElementById("form-container").style.display = "block";
-    }
-
-    document.getElementById("form-apadrinhar").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const nome = document.getElementById("nome").value.trim();
-      const telefone = document.getElementById("telefone").value.trim();
-
-      try {
-        // Salvar padrinho
-        await fetch(`${URL_BASE}?sheet=padrinhos`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: [{ nome, telefone, crianca: nomeCriancaSelecionada }] })
-        });
-
-        // Atualizar criança
-        await fetch(`${URL_BASE}/nome/${nomeCriancaSelecionada}?sheet=criancas`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: { apadrinhada: "sim" } })
-        });
-
-        alert("Apadrinhamento confirmado!");
-        document.getElementById("form-container").style.display = "none";
-        document.getElementById("form-apadrinhar").reset();
-        carregarCriancas();
-      } catch (e) {
-        console.error("Erro ao salvar padrinho:", e);
-      }
-    });
-
-    carregarCriancas();
   </script>
-
-  <a href="painel.html">
-  <button style="padding: 10px 20px; background-color: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer;">
-    Acessar Admin
-  </button>
-</a>
-
 </body>
 </html>

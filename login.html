@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Administrativo</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fcefe3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #c0392b;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .erro {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login Administrativo</h2>
+    <input type="email" id="email" placeholder="E-mail" />
+    <input type="password" id="senha" placeholder="Senha" />
+    <button onclick="fazerLogin()">Entrar</button>
+    <p class="erro" id="erro"></p>
+  </div>
+
+  <script>
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
+      authDomain: "natalfucf.firebaseapp.com",
+      projectId: "natalfucf",
+      storageBucket: "natalfucf.appspot.com",
+      messagingSenderId: "695197434950",
+      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
+      measurementId: "G-RBKZ3JSKJW"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    function fazerLogin() {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      const erroMsg = document.getElementById("erro");
+
+      firebase.auth().signInWithEmailAndPassword(email, senha)
+        .then(() => {
+          window.location.href = "admin.html";
+        })
+        .catch((error) => {
+          erroMsg.textContent = "Usuário ou senha inválidos.";
+          console.error("Erro ao logar:", error);
+        });
+    }
+  </script>
+</body>
+</html>
