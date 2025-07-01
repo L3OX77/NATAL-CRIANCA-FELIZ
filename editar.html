@@ -56,6 +56,26 @@
       cursor: pointer;
     }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
+      authDomain: "natalfucf.firebaseapp.com",
+      projectId: "natalfucf",
+      storageBucket: "natalfucf.appspot.com",
+      messagingSenderId: "695197434950",
+      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
+      measurementId: "G-RBKZ3JSKJW"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
 </head>
 <body>
   <h1>Painel Administrativo</h1>
@@ -81,6 +101,7 @@
     <div id="lista-criancas"></div>
     <div id="edicao" class="form-section hidden">
       <h3>Editar Criança</h3>
+      <input type="hidden" id="edit-id">
       <input type="text" id="edit-nome" placeholder="Nome" readonly>
       <input type="number" id="edit-idade" placeholder="Idade">
       <input type="text" id="edit-altura" placeholder="Altura">
@@ -123,6 +144,7 @@
       }
 
       const novaCrianca = {
+        id: Date.now().toString(),
         nome,
         idade,
         altura,
@@ -158,14 +180,15 @@
           Roupa: ${crianca.roupa}<br>
           Calçado: ${crianca.calcado}<br>
           Apadrinhada: ${crianca.apadrinhada}<br>
-          <button onclick="editarCrianca('${crianca.nome}', '${crianca.idade}', '${crianca.altura}', '${crianca.roupa}', '${crianca.calcado}')">Editar</button>
-          <button onclick="excluirCrianca('${crianca.nome}')">Excluir</button>
+          <button onclick="editarCrianca('${crianca.id}', '${crianca.nome}', '${crianca.idade}', '${crianca.altura}', '${crianca.roupa}', '${crianca.calcado}')">Editar</button>
+          <button onclick="excluirCrianca('${crianca.id}', '${crianca.nome}')">Excluir</button>
         `;
         lista.appendChild(div);
       });
     }
 
-    function editarCrianca(nome, idade, altura, roupa, calcado) {
+    function editarCrianca(id, nome, idade, altura, roupa, calcado) {
+      document.getElementById("edit-id").value = id;
       document.getElementById("edit-nome").value = nome;
       document.getElementById("edit-idade").value = idade;
       document.getElementById("edit-altura").value = altura;
@@ -175,13 +198,13 @@
     }
 
     async function salvarEdicao() {
-      const nome = document.getElementById("edit-nome").value;
+      const id = document.getElementById("edit-id").value;
       const idade = document.getElementById("edit-idade").value;
       const altura = document.getElementById("edit-altura").value;
       const roupa = document.getElementById("edit-roupa").value;
       const calcado = document.getElementById("edit-calcado").value;
 
-      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${encodeURIComponent(nome)}`, {
+      await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: { idade, altura, roupa, calcado } })
@@ -196,14 +219,14 @@
       document.getElementById("edicao").classList.add("hidden");
     }
 
-    async function excluirCrianca(nome) {
+    async function excluirCrianca(id, nome) {
       if (!confirm(`Excluir ${nome}?`)) return;
 
-      await fetch(`${URL_BASE}/nome/${encodeURIComponent(nome)}?sheet=criancas`, {
+      await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
         method: "DELETE"
       });
 
-      alert("Criança excluída com sucesso!");
+      alert("Criança excluída com sucesso.");
       carregarCriancas();
     }
   </script>
