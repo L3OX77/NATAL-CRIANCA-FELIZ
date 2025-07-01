@@ -204,7 +204,7 @@
       const roupa = document.getElementById("edit-roupa").value;
       const calcado = document.getElementById("edit-calcado").value;
 
-      await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
+      await fetch(`${URL_BASE}/search?id=${id}&sheet=criancas`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: { idade, altura, roupa, calcado } })
@@ -222,8 +222,8 @@
     async function excluirCrianca(id, nome) {
       if (!confirm(`Excluir ${nome}?`)) return;
 
-      await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
-        method: "DELETE"
+      await fetch(`${URL_BASE}/search?id=${id}&sheet=criancas`, {
+        method: "DELETE" 
       });
 
       alert("Criança excluída com sucesso.");
