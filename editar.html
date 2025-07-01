@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,25 +67,20 @@
       appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
       measurementId: "G-RBKZ3JSKJW"
     };
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+  }
+});
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "login.html";
-      }
-    });
   </script>
 </head>
 <body>
-  <h1>Painel Administrativo</h1>
-
-  <div id="menu">
+  <h1>Painel Administrativo</h1>  <div id="menu">
     <button class="btn" onclick="mostrarSessao('cadastro')">Cadastrar Criança</button>
     <button class="btn" onclick="mostrarSessao('lista')">Editar / Excluir Crianças</button>
     <button class="btn" onclick="window.location.href='index.html'">Voltar ao Site</button>
-  </div>
-
-  <div id="cadastro" class="form-section hidden">
+  </div>  <div id="cadastro" class="form-section hidden">
     <h3>Cadastro de Criança</h3>
     <input type="text" id="nome" placeholder="Nome">
     <input type="number" id="idade" placeholder="Idade">
@@ -95,9 +89,7 @@
     <input type="text" id="calcado" placeholder="Calçado">
     <button class="btn" onclick="cadastrarCrianca()">Cadastrar</button>
     <button class="btn" onclick="voltarMenu()">Voltar</button>
-  </div>
-
-  <div id="lista" class="hidden">
+  </div>  <div id="lista" class="hidden">
     <div id="lista-criancas"></div>
     <div id="edicao" class="form-section hidden">
       <h3>Editar Criança</h3>
@@ -111,9 +103,7 @@
       <button class="btn" onclick="fecharEdicao()">Cancelar</button>
     </div>
     <button class="btn" onclick="voltarMenu()">Voltar</button>
-  </div>
-
-  <script>
+  </div>  <script>
     const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
 
     function mostrarSessao(sessao) {
@@ -154,7 +144,7 @@
         apadrinhada: "nao"
       };
 
-      await fetch(`${URL_BASE}?sheet=criancas`, {
+      await fetch(${URL_BASE}?sheet=criancas, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: [novaCrianca] })
@@ -165,7 +155,7 @@
     }
 
     async function carregarCriancas() {
-      const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
+      const resposta = await fetch(${URL_BASE}?sheet=criancas);
       const dados = await resposta.json();
       const lista = document.getElementById("lista-criancas");
       lista.innerHTML = "";
@@ -204,7 +194,7 @@
       const roupa = document.getElementById("edit-roupa").value;
       const calcado = document.getElementById("edit-calcado").value;
 
-      await fetch(`${URL_BASE}/search?id=${id}&sheet=criancas`, {
+      await fetch(${URL_BASE}/id/${id}?sheet=criancas, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: { idade, altura, roupa, calcado } })
@@ -220,15 +210,14 @@
     }
 
     async function excluirCrianca(id, nome) {
-      if (!confirm(`Excluir ${nome}?`)) return;
+      if (!confirm(Excluir ${nome}?)) return;
 
-      await fetch(`${URL_BASE}/search?id=${id}&sheet=criancas`, {
-        method: "DELETE" 
+      await fetch(${URL_BASE}/id/${id}?sheet=criancas, {
+        method: "DELETE"
       });
 
       alert("Criança excluída com sucesso.");
       carregarCriancas();
     }
-  </script>
-</body>
+  </script></body>
 </html>
