@@ -226,22 +226,19 @@
       if (!confirm(`Excluir ${nome}?`)) return;
 
       await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
-        method: "DELETE"
-      });
+        method: "DELETE" });
 
       alert("Criança excluída com sucesso.");
       carregarCriancas();
     }
 
     async function alternarApadrinhamento(id, atual) {
-      const novoStatus = atual === "sim" ? "nao" : "sim";
-
+      const novo = atual === "sim" ? "nao" : "sim";
       await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { apadrinhada: novoStatus } })
+        body: JSON.stringify({ data: { apadrinhada: novo } })
       });
-
       carregarCriancas();
     }
   </script>
