@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel Administrativo</title>
-  <link rel="stylesheet" href="style.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,9 +22,6 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
-    }
-    .hidden {
-      display: none;
     }
     .form-section {
       max-width: 400px;
@@ -54,86 +50,59 @@
       padding: 5px 10px;
       border-radius: 5px;
       cursor: pointer;
+      margin-right: 5px;
     }
   </style>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
       authDomain: "natalfucf.firebaseapp.com",
+      databaseURL: "https://natalfucf-default-rtdb.firebaseio.com",
       projectId: "natalfucf",
       storageBucket: "natalfucf.appspot.com",
       messagingSenderId: "695197434950",
       appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
-      measurementId: "G-RBKZ3JSKJW"
     };
     firebase.initializeApp(firebaseConfig);
-
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "login.html";
-      }
-    });
+    const db = firebase.database();
   </script>
 </head>
 <body>
   <h1>Painel Administrativo</h1>
+
   <div id="menu">
     <button class="btn" onclick="mostrarSessao('cadastro')">Cadastrar Criança</button>
     <button class="btn" onclick="mostrarSessao('lista')">Editar / Excluir Crianças</button>
-    <button class="btn" onclick="window.location.href='index.html'">Voltar ao Site</button>
-    <button class="btn" onclick="logout()">Sair</button>
   </div>
 
-  <div id="cadastro" class="form-section hidden">
+  <div id="cadastro" class="form-section" style="display: none;">
     <h3>Cadastro de Criança</h3>
     <input type="text" id="nome" placeholder="Nome">
     <input type="number" id="idade" placeholder="Idade">
     <input type="text" id="altura" placeholder="Altura">
     <input type="text" id="roupa" placeholder="Roupa">
     <input type="text" id="calcado" placeholder="Calçado">
-    <button class="btn" onclick="cadastrarCrianca()">Cadastrar</button>
-    <button class="btn" onclick="voltarMenu()">Voltar</button>
+    <button class="btn" onclick="cadastrarCrianca()">Salvar</button>
+    <button class="btn" onclick="mostrarSessao('menu')">Voltar</button>
   </div>
 
-  <div id="lista" class="hidden">
+  <div id="lista" style="display: none;">
     <div id="lista-criancas"></div>
-    <div id="edicao" class="form-section hidden">
-      <h3>Editar Criança</h3>
-      <input type="text" id="edit-nome" placeholder="Nome" readonly>
-      <input type="number" id="edit-idade" placeholder="Idade">
-      <input type="text" id="edit-altura" placeholder="Altura">
-      <input type="text" id="edit-roupa" placeholder="Roupa">
-      <input type="text" id="edit-calcado" placeholder="Calçado">
-      <button class="btn" onclick="salvarEdicao()">Salvar</button>
-      <button class="btn" onclick="fecharEdicao()">Cancelar</button>
-    </div>
-    <button class="btn" onclick="voltarMenu()">Voltar</button>
+    <button class="btn" onclick="mostrarSessao('menu')">Voltar</button>
   </div>
 
   <script>
-    const URL_BASE = "https://sheetdb.io/api/v1/59vqa5g6txcd4";
-
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "login.html";
-      });
-    }
-
     function mostrarSessao(sessao) {
-      document.getElementById("menu").classList.add("hidden");
-      document.getElementById("cadastro").classList.add("hidden");
-      document.getElementById("lista").classList.add("hidden");
-      document.getElementById(sessao).classList.remove("hidden");
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("cadastro").style.display = "none";
+      document.getElementById("lista").style.display = "none";
+      document.getElementById(sessao).style.display = "block";
       if (sessao === "lista") carregarCriancas();
-    }
-
-    function voltarMenu() {
-      document.getElementById("menu").classList.remove("hidden");
-      document.getElementById("cadastro").classList.add("hidden");
-      document.getElementById("lista").classList.add("hidden");
-      document.getElementById("edicao").classList.add("hidden");
     }
 
     async function cadastrarCrianca() {
@@ -148,101 +117,74 @@
         return;
       }
 
-      const novaCrianca = {
+      const novaRef = db.ref("criancas").push();
+      await novaRef.set({
+        id: novaRef.key,
         nome,
         idade,
         altura,
         roupa,
         calcado,
-        imagem: "",
         apadrinhada: "nao"
-      };
-
-      await fetch(`${URL_BASE}?sheet=criancas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: [novaCrianca] })
       });
 
-      alert("Criança cadastrada com sucesso!");
-      document.getElementById("cadastro").querySelectorAll("input").forEach(el => el.value = "");
+      alert("Cadastrada com sucesso!");
+      document.querySelectorAll("#cadastro input").forEach(i => i.value = "");
     }
 
-    async function carregarCriancas() {
-      const resposta = await fetch(`${URL_BASE}?sheet=criancas`);
-      const dados = await resposta.json();
+    function carregarCriancas() {
       const lista = document.getElementById("lista-criancas");
       lista.innerHTML = "";
 
-      dados.forEach(crianca => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <strong>${crianca.nome}</strong><br>
-          Idade: ${crianca.idade}<br>
-          Altura: ${crianca.altura}<br>
-          Roupa: ${crianca.roupa}<br>
-          Calçado: ${crianca.calcado}<br>
-          Apadrinhada: ${crianca.apadrinhada}<br>
-          <button onclick="editarCrianca('${crianca.nome}', '${crianca.idade}', '${crianca.altura}', '${crianca.roupa}', '${crianca.calcado}')">Editar</button>
-          <button onclick="excluirCrianca('${crianca.nome}')">Excluir</button>
-        `;
-        lista.appendChild(div);
+      db.ref("criancas").once("value", snapshot => {
+        snapshot.forEach(child => {
+          const c = child.val();
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <strong>${c.nome}</strong><br>
+            Idade: ${c.idade} <br>
+            Altura: ${c.altura} <br>
+            Roupa: ${c.roupa} <br>
+            Calçado: ${c.calcado} <br>
+            Apadrinhada: ${c.apadrinhada}<br>
+            <button onclick="editarCrianca('${c.id}')">Editar</button>
+            <button onclick="excluirCrianca('${c.id}', '${c.nome}')">Excluir</button>
+            <button onclick="alternarApadrinhamento('${c.id}', '${c.apadrinhada}')">Alternar Apadrinhamento</button>
+          `;
+          lista.appendChild(div);
+        });
       });
     }
 
-    function editarCrianca(nome, idade, altura, roupa, calcado) {
-      document.getElementById("edit-nome").value = nome;
-      document.getElementById("edit-idade").value = idade;
-      document.getElementById("edit-altura").value = altura;
-      document.getElementById("edit-roupa").value = roupa;
-      document.getElementById("edit-calcado").value = calcado;
-      document.getElementById("edicao").classList.remove("hidden");
-    }
+    function editarCrianca(id) {
+      const novosDados = prompt("Digite os novos dados (idade,altura,roupa,calçado):").split(",");
+      if (novosDados.length < 4) return alert("Formato inválido.");
 
-    async function salvarEdicao() {
-      const nome = document.getElementById("edit-nome").value;
-      const idade = document.getElementById("edit-idade").value;
-      const altura = document.getElementById("edit-altura").value;
-      const roupa = document.getElementById("edit-roupa").value;
-      const calcado = document.getElementById("edit-calcado").value;
-
-      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${encodeURIComponent(nome)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { idade, altura, roupa, calcado } })
+      db.ref("criancas/" + id).update({
+        idade: novosDados[0],
+        altura: novosDados[1],
+        roupa: novosDados[2],
+        calcado: novosDados[3]
+      }).then(() => {
+        alert("Atualizado!");
+        carregarCriancas();
       });
-
-      alert("Dados atualizados com sucesso!");
-      document.getElementById("edicao").classList.add("hidden");
-      carregarCriancas();
     }
 
-    function fecharEdicao() {
-      document.getElementById("edicao").classList.add("hidden");
-    }
-
-    async function excluirCrianca(nome) {
-      if (!confirm(`Excluir ${nome}?`)) return;
-
-      const dadosVazios = {
-        nome: "",
-        idade: "",
-        altura: "",
-        roupa: "",
-        calcado: "",
-        imagem: "",
-        apadrinhada: ""
-      };
-
-      await fetch(`${URL_BASE}/search?sheet=criancas&nome=${encodeURIComponent(nome)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: dadosVazios })
+    function excluirCrianca(id, nome) {
+      if (!confirm(`Deseja excluir ${nome}?`)) return;
+      db.ref("criancas/" + id).remove().then(() => {
+        alert("Excluído.");
+        carregarCriancas();
       });
+    }
 
-      alert("Criança excluída (linha apagada).");
-      carregarCriancas();
+    function alternarApadrinhamento(id, atual) {
+      const novo = atual === "sim" ? "nao" : "sim";
+      db.ref("criancas/" + id).update({ apadrinhada: novo }).then(() => {
+        carregarCriancas();
+      });
     }
   </script>
 </body>
