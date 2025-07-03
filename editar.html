@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel Administrativo</title>
   <style>
     body {
@@ -10,9 +10,7 @@
       background-color: #fcefe3;
       padding: 20px;
     }
-    h1 {
-      text-align: center;
-    }
+    h1 { text-align: center; }
     .btn {
       display: block;
       margin: 10px auto;
@@ -23,9 +21,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
     .form-section {
       max-width: 400px;
       margin: 20px auto;
@@ -56,26 +52,10 @@
       margin-right: 5px;
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCgbcNRGeeo6cxx85MqvF-MB8recucuRyo",
-      authDomain: "natalfucf.firebaseapp.com",
-      projectId: "natalfucf",
-      storageBucket: "natalfucf.appspot.com",
-      messagingSenderId: "695197434950",
-      appId: "1:695197434950:web:fb8879afa4fa51b3fa7647",
-      measurementId: "G-RBKZ3JSKJW"
-    };
-    firebase.initializeApp(firebaseConfig);
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) window.location.href = "login.html";
-    });
-  </script>
 </head>
 <body>
   <h1>Painel Administrativo</h1>
+
   <div id="menu">
     <button class="btn" onclick="mostrarSessao('cadastro')">Cadastrar Criança</button>
     <button class="btn" onclick="mostrarSessao('lista')">Editar / Excluir Crianças</button>
@@ -84,11 +64,11 @@
 
   <div id="cadastro" class="form-section hidden">
     <h3>Cadastro de Criança</h3>
-    <input type="text" id="nome" placeholder="Nome">
-    <input type="number" id="idade" placeholder="Idade">
-    <input type="text" id="altura" placeholder="Altura">
-    <input type="text" id="roupa" placeholder="Roupa">
-    <input type="text" id="calcado" placeholder="Calçado">
+    <input type="text" id="nome" placeholder="Nome" />
+    <input type="number" id="idade" placeholder="Idade" />
+    <input type="text" id="altura" placeholder="Altura" />
+    <input type="text" id="roupa" placeholder="Roupa" />
+    <input type="text" id="calcado" placeholder="Calçado" />
     <button class="btn" onclick="cadastrarCrianca()">Cadastrar</button>
     <button class="btn" onclick="voltarMenu()">Voltar</button>
   </div>
@@ -97,12 +77,12 @@
     <div id="lista-criancas"></div>
     <div id="edicao" class="form-section hidden">
       <h3>Editar Criança</h3>
-      <input type="hidden" id="edit-id">
-      <input type="text" id="edit-nome" placeholder="Nome" readonly>
-      <input type="number" id="edit-idade" placeholder="Idade">
-      <input type="text" id="edit-altura" placeholder="Altura">
-      <input type="text" id="edit-roupa" placeholder="Roupa">
-      <input type="text" id="edit-calcado" placeholder="Calçado">
+      <input type="hidden" id="edit-id" />
+      <input type="text" id="edit-nome" placeholder="Nome" readonly />
+      <input type="number" id="edit-idade" placeholder="Idade" />
+      <input type="text" id="edit-altura" placeholder="Altura" />
+      <input type="text" id="edit-roupa" placeholder="Roupa" />
+      <input type="text" id="edit-calcado" placeholder="Calçado" />
       <select id="edit-apadrinhada">
         <option value="sim">Apadrinhada</option>
         <option value="nao">Não Apadrinhada</option>
@@ -207,7 +187,7 @@
       const calcado = document.getElementById("edit-calcado").value;
       const apadrinhada = document.getElementById("edit-apadrinhada").value;
 
-      await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
+      await fetch(`${URL_BASE}/search?id=${id}&sheet=criancas`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: { idade, altura, roupa, calcado, apadrinhada } })
@@ -225,8 +205,9 @@
     async function excluirCrianca(id, nome) {
       if (!confirm(`Excluir ${nome}?`)) return;
 
-      await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
-        method: "DELETE" });
+      await fetch(`${URL_BASE}/search?id=${id}&sheet=criancas`, {
+        method: "DELETE"
+      });
 
       alert("Criança excluída com sucesso.");
       carregarCriancas();
@@ -234,7 +215,7 @@
 
     async function alternarApadrinhamento(id, atual) {
       const novo = atual === "sim" ? "nao" : "sim";
-      await fetch(`${URL_BASE}/id/${id}?sheet=criancas`, {
+      await fetch(`${URL_BASE}/search?id=${id}&sheet=criancas`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: { apadrinhada: novo } })
